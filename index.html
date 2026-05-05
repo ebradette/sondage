@@ -1193,8 +1193,9 @@
 
     <div class="admin-actions">
       <button type="button" class="submit-btn" onclick="saveAdminChanges()">Enregistrer</button>
-      <button type="button" class="submit-btn secondary" onclick="resetToDefaults()">Réinitialiser</button>
+      <button type="button" class="submit-btn secondary" onclick="resetToDefaults()">Réinitialiser config</button>
       <button type="button" class="submit-btn secondary" onclick="exportConfig()">Exporter config</button>
+      <button type="button" class="submit-btn" onclick="clearAllVotes()" style="color: var(--danger-light); border-color: var(--danger);">🗑 Effacer tous les votes</button>
     </div>
   </div>
 </div>
@@ -1224,7 +1225,7 @@
 
   const ADMIN_PASSWORD = "Gala!2026";
   const STORAGE_KEY = "galaPollConfig_v5";
-  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKA2IaTty0-f3E0OnTxDeJm4elVVINd6Ys5nniVQx-obl9q4TsV1j6bk3gYOUNsoLJSw/exec";
+  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOvqJ0tPaQbm6uLPk467JZQbFMUdFQIiAMykoyIHPNMuqt-0IOwbAv37uIWIX_jJzvXQ/exec";
 
   let categories = [...DEFAULT_CATEGORIES];
   let employees = [...DEFAULT_EMPLOYEES];
@@ -1335,6 +1336,22 @@
       return true;
     } catch (e) {
       console.warn("Sauvegarde Google impossible :", e);
+      return false;
+    }
+  }
+
+  async function clearAllDataOnServer() {
+    if (!scriptUrl) return false;
+    try {
+      await fetch(scriptUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'clearAllData' })
+      });
+      return true;
+    } catch (e) {
+      console.warn("Effacement Google impossible :", e);
       return false;
     }
   }
@@ -1597,11 +1614,18 @@
     setTimeout(() => document.getElementById('admin-password').focus(), 100);
   });
 
-  document.getElementById('password-form').addEventListener('submit', (e) => {
+  document.getElementById('password-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const pwd = document.getElementById('admin-password').value;
     if (pwd === ADMIN_PASSWORD) {
       closeModal('password-modal');
+
+      // Recharger la config depuis Google Sheets pour avoir les dernières valeurs
+      if (scriptUrl) {
+        await loadConfigFromServer();
+        renderPoll();
+      }
+
       renderAdminEditors();
       openModal('admin-modal');
       if (scriptUrl) loadResults();
@@ -1757,43 +1781,87 @@
   }
 
   async function resetToDefaults() {
-    if (!confirm("⚠️ Réinitialiser aux valeurs par défaut ?\n\nCette action :\n• Remet les 25 catégories par défaut (Catégorie 1, 2, 3...)\n• Remet la liste des 67 employés\n• Remet 3 choix par catégorie\n• Synchronise sur Google Sheets pour TOUT LE MONDE")) return;
+    if (!confirm("⚠️ Réinitialiser la CONFIGURATION aux valeurs par défaut ?\n\nCette action :\n• Remet les 25 catégories par défaut (Catégorie 1, 2, 3...)\n• Remet la liste des 67 employés\n• Remet 3 choix par catégorie\n• Synchronise sur Google Sheets pour TOUT LE MONDE\n\nLes VOTES déjà soumis ne seront PAS effacés.")) return;
 
-    categories = [...DEFAULT_CATEGORIES];
-    employees = [...DEFAULT_EMPLOYEES];
-    choicesPerCategory = 3;
-
-    // Mettre à jour visuellement le panneau admin
-    renderAdminEditors();
-
-    // Mettre à jour le sondage
-    renderPoll();
-
-    // Synchroniser sur Google
     const trigger = document.getElementById('admin-trigger');
     const original = trigger.textContent;
     trigger.textContent = '⏳ Reset...';
     trigger.style.color = 'var(--gold)';
     trigger.style.borderColor = 'var(--gold)';
 
+    // Forcer les valeurs par défaut
+    categories = [...DEFAULT_CATEGORIES];
+    employees = [...DEFAULT_EMPLOYEES];
+    choicesPerCategory = 3;
+
+    // Sauvegarder sur Google
+    let success = false;
     if (scriptUrl) {
-      const success = await saveConfigToServer();
-      trigger.textContent = success ? '✓ Réinitialisé' : '⚠ Erreur sync';
-      if (success) {
-        alert("✓ Réinitialisation effectuée et synchronisée sur Google Sheets.");
-      } else {
-        alert("⚠ La réinitialisation locale a réussi mais la synchronisation Google a échoué.");
-      }
-    } else {
-      trigger.textContent = '✓ Réinitialisé';
-      alert("✓ Réinitialisation locale effectuée.");
+      success = await saveConfigToServer();
     }
 
+    // Recharger depuis Google pour s'assurer qu'on a les bonnes valeurs partout
+    if (scriptUrl && success) {
+      await new Promise(r => setTimeout(r, 800));
+      await loadConfigFromServer();
+    }
+
+    // Re-render TOUT
+    renderAdminEditors();
+    renderPoll();
+
+    trigger.textContent = success ? '✓ Réinitialisé' : '⚠ Erreur sync';
     setTimeout(() => {
       trigger.textContent = original;
       trigger.style.color = '';
       trigger.style.borderColor = '';
     }, 2500);
+
+    if (success) {
+      alert("✓ Configuration réinitialisée et synchronisée sur Google Sheets.");
+    } else if (scriptUrl) {
+      alert("⚠ La réinitialisation locale a réussi mais la synchronisation Google a échoué.");
+    } else {
+      alert("✓ Réinitialisation locale effectuée.");
+    }
+  }
+
+  async function clearAllVotes() {
+    // Double confirmation pour cette action destructrice
+    if (!confirm("⚠️⚠️⚠️ ATTENTION : Effacer TOUS les votes ?\n\nCette action va supprimer DÉFINITIVEMENT :\n• Tous les votes soumis par les employés\n• L'onglet Résultats\n\nLa liste des catégories et employés ne sera PAS touchée.\n\nCETTE ACTION EST IRRÉVERSIBLE.")) return;
+
+    const phrase = prompt('Pour confirmer, tapez exactement : EFFACER');
+    if (phrase !== 'EFFACER') {
+      alert("Annulé. Vous n'avez pas tapé EFFACER correctement.");
+      return;
+    }
+
+    const trigger = document.getElementById('admin-trigger');
+    const original = trigger.textContent;
+    trigger.textContent = '⏳ Effacement...';
+    trigger.style.color = 'var(--danger-light)';
+    trigger.style.borderColor = 'var(--danger)';
+
+    const success = await clearAllDataOnServer();
+
+    if (success) {
+      // Recharger les résultats pour montrer le tableau vide
+      await new Promise(r => setTimeout(r, 800));
+      await loadResults();
+    }
+
+    trigger.textContent = success ? '✓ Effacé' : '⚠ Erreur';
+    setTimeout(() => {
+      trigger.textContent = original;
+      trigger.style.color = '';
+      trigger.style.borderColor = '';
+    }, 2500);
+
+    if (success) {
+      alert("✓ Tous les votes ont été effacés. Le sondage est prêt pour le vrai gala !");
+    } else {
+      alert("⚠ L'effacement a échoué. Vérifiez la connexion ou effacez manuellement dans le Google Sheet.");
+    }
   }
 
   function exportConfig() {
