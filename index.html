@@ -47,7 +47,6 @@
     padding: 60px 32px 80px;
   }
 
-  /* SETUP BANNER */
   .setup-banner {
     background: rgba(194, 84, 80, 0.1);
     border: 1px solid var(--danger);
@@ -62,7 +61,6 @@
   .setup-banner.show { display: block; }
   .setup-banner strong { color: var(--text); }
 
-  /* ADMIN BUTTON */
   .admin-trigger {
     position: fixed;
     top: 20px;
@@ -88,7 +86,6 @@
     color: var(--gold);
   }
 
-  /* HEADER */
   .header {
     text-align: center;
     margin-bottom: 64px;
@@ -115,7 +112,6 @@
     margin-bottom: 16px;
   }
 
-  /* 40 ANNIVERSARY BADGE */
   .anniversary-badge {
     display: inline-flex;
     flex-direction: column;
@@ -234,7 +230,6 @@
     margin: 0 auto;
   }
 
-  /* IDENTIFICATION */
   .identification {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -301,7 +296,6 @@
     font-size: 18px;
   }
 
-  /* CATEGORIES */
   .category {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -405,7 +399,6 @@
   }
 
   .selections select { padding-right: 40px; cursor: pointer; }
-
   .selections select:hover { border-color: var(--gold-dark); }
 
   .selections select:focus, .text-input:focus {
@@ -421,7 +414,6 @@
   .selections select option { background: var(--bg-card); color: var(--text); padding: 8px; }
   .selections select option:disabled { color: var(--text-muted); font-style: italic; }
 
-  /* PROGRESS */
   .progress-bar {
     position: sticky;
     top: 16px;
@@ -463,7 +455,6 @@
     transition: width 0.4s ease;
   }
 
-  /* SUBMIT */
   .submit-section { margin-top: 56px; text-align: center; }
 
   .submit-btn {
@@ -492,7 +483,6 @@
   .submit-btn.secondary { color: var(--text-muted); border-color: var(--border); }
   .submit-btn.secondary:hover { background: var(--border); color: var(--text); }
 
-  /* CONFIRMATION */
   .confirmation { display: none; text-align: center; padding: 80px 32px; }
   .confirmation.show { display: block; }
   .confirmation .ornament { font-size: 32px; margin-bottom: 24px; }
@@ -514,7 +504,6 @@
     margin-bottom: 40px;
   }
 
-  /* MODAL */
   .modal-overlay {
     display: none;
     position: fixed;
@@ -579,11 +568,7 @@
     margin-bottom: 32px;
   }
 
-  .password-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
+  .password-form { display: flex; flex-direction: column; gap: 20px; }
 
   .password-form label {
     font-size: 11px;
@@ -614,7 +599,6 @@
   }
   .password-error.show { display: block; }
 
-  /* ADMIN PANEL */
   .admin-tabs {
     display: flex;
     flex-wrap: wrap;
@@ -642,11 +626,7 @@
     min-width: 0;
   }
 
-  .admin-tab .tab-icon {
-    display: inline-block;
-    margin-right: 4px;
-  }
-
+  .admin-tab .tab-icon { display: inline-block; margin-right: 4px; }
   .admin-tab:hover { color: var(--text); }
 
   .admin-tab.active {
@@ -769,7 +749,6 @@
   .status-message.success { background: rgba(111, 168, 111, 0.1); border: 1px solid var(--success); color: var(--success); }
   .status-message.error { background: rgba(194, 84, 80, 0.1); border: 1px solid var(--danger); color: var(--danger-light); }
 
-  /* SUBMIT STATUS */
   .submit-status {
     margin-top: 20px;
     padding: 16px;
@@ -804,7 +783,6 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* RÉSULTATS */
   .results-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -836,10 +814,7 @@
     margin-top: 6px;
   }
 
-  .winners-list {
-    display: grid;
-    gap: 16px;
-  }
+  .winners-list { display: grid; gap: 16px; }
 
   .category-result {
     background: var(--bg);
@@ -851,11 +826,7 @@
   }
 
   .category-result:hover { background: var(--bg-card-hover); }
-
-  .category-result.empty {
-    border-left-color: var(--border);
-    opacity: 0.5;
-  }
+  .category-result.empty { border-left-color: var(--border); opacity: 0.5; }
 
   .cat-result-header {
     display: flex;
@@ -890,10 +861,7 @@
     padding: 8px 0;
   }
 
-  .nominees-list {
-    display: grid;
-    gap: 4px;
-  }
+  .nominees-list { display: grid; gap: 4px; }
 
   .nominee-row {
     display: grid;
@@ -924,10 +892,7 @@
     font-weight: 600;
   }
 
-  .nominee-name {
-    font-size: 14px;
-    color: var(--text);
-  }
+  .nominee-name { font-size: 14px; color: var(--text); }
 
   .nominee-row.winner .nominee-name {
     font-family: 'Cormorant Garamond', serif;
@@ -936,10 +901,7 @@
     color: var(--gold-light);
   }
 
-  .nominee-name .crown {
-    margin-left: 6px;
-    font-size: 12px;
-  }
+  .nominee-name .crown { margin-left: 6px; font-size: 12px; }
 
   .nominee-votes {
     font-size: 11px;
@@ -949,15 +911,8 @@
     font-weight: 500;
   }
 
-  .nominee-row.winner .nominee-votes {
-    color: var(--gold);
-    font-weight: 600;
-  }
-
-  .nominee-row.tied .nominee-rank::after {
-    content: ' ⚖';
-    font-size: 10px;
-  }
+  .nominee-row.winner .nominee-votes { color: var(--gold); font-weight: 600; }
+  .nominee-row.tied .nominee-rank::after { content: ' ⚖'; font-size: 10px; }
 
   .tied-warning {
     margin-top: 16px;
@@ -970,7 +925,6 @@
     font-family: 'Cormorant Garamond', serif;
   }
 
-  /* VOTERS LISTS */
   .voters-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1006,11 +960,7 @@
     margin-bottom: 16px;
   }
 
-  .voters-list {
-    list-style: none;
-    max-height: 400px;
-    overflow-y: auto;
-  }
+  .voters-list { list-style: none; max-height: 400px; overflow-y: auto; }
 
   .voters-list li {
     padding: 8px 12px;
@@ -1065,7 +1015,6 @@
     font-style: italic;
   }
 
-  /* RESPONSIVE */
   @media (max-width: 600px) {
     .container { padding: 40px 20px 60px; }
     .anniversary-badge { width: 140px; height: 140px; padding: 16px 32px; }
@@ -1091,11 +1040,7 @@
     .category-result { padding: 14px 16px; }
     .cat-result-num { font-size: 18px; min-width: 28px; }
     .cat-result-name { font-size: 16px; }
-    .nominee-row {
-      grid-template-columns: 24px 1fr auto;
-      gap: 8px;
-      padding: 6px 8px;
-    }
+    .nominee-row { grid-template-columns: 24px 1fr auto; gap: 8px; padding: 6px 8px; }
     .nominee-row.winner .nominee-name { font-size: 15px; }
     .nominee-name { font-size: 13px; }
   }
@@ -1194,9 +1139,8 @@
       <button class="admin-tab" data-tab="settings">Param.</button>
     </div>
 
-    <!-- RESULTS TAB -->
     <div class="admin-section active" id="tab-results">
-      <div class="admin-info">Les <strong>4 nominés</strong> de chaque catégorie (les 4 personnes ayant reçu le plus de votes). Le <strong>#1</strong> 👑 est le gagnant. Données récupérées en direct depuis Google Sheets.</div>
+      <div class="admin-info">Les <strong>4 nominés</strong> de chaque catégorie. Le <strong>#1</strong> 👑 est le gagnant.</div>
       <div class="results-actions">
         <button type="button" class="submit-btn secondary" onclick="loadResults()">↻ Actualiser</button>
         <button type="button" class="submit-btn secondary" onclick="exportWinners()">Exporter (CSV)</button>
@@ -1207,9 +1151,8 @@
       </div>
     </div>
 
-    <!-- VOTERS TAB -->
     <div class="admin-section" id="tab-voters">
-      <div class="admin-info">Liste des employés ayant voté et ceux n'ayant pas encore voté. Permet le suivi du taux de participation.</div>
+      <div class="admin-info">Suivi du taux de participation.</div>
       <div class="results-actions">
         <button type="button" class="submit-btn secondary" onclick="loadResults()">↻ Actualiser</button>
       </div>
@@ -1218,7 +1161,6 @@
       </div>
     </div>
 
-    <!-- CONNECTION TAB -->
     <div class="admin-section" id="tab-connection">
       <div class="admin-info">URL de votre Google Apps Script (se termine par <code>/exec</code>).</div>
       <div class="config-field">
@@ -1229,21 +1171,18 @@
       <div class="status-message" id="connection-status"></div>
     </div>
 
-    <!-- CATEGORIES TAB -->
     <div class="admin-section" id="tab-categories">
       <div class="admin-info">Modifiez les noms des catégories.</div>
       <div id="categories-editor"></div>
       <button type="button" class="btn-add" onclick="addCategoryRow()">+ Ajouter une catégorie</button>
     </div>
 
-    <!-- EMPLOYEES TAB -->
     <div class="admin-section" id="tab-employees">
       <div class="admin-info">Liste des employés. Triée alphabétiquement à la sauvegarde.</div>
       <div id="employees-editor"></div>
       <button type="button" class="btn-add" onclick="addEmployeeRow()">+ Ajouter un employé</button>
     </div>
 
-    <!-- SETTINGS TAB -->
     <div class="admin-section" id="tab-settings">
       <div class="admin-info">Paramètres du sondage.</div>
       <div class="config-field">
@@ -1284,7 +1223,7 @@
   ];
 
   const ADMIN_PASSWORD = "Gala!2026";
-  const STORAGE_KEY = "galaPollConfig_v4";
+  const STORAGE_KEY = "galaPollConfig_v5";
   const DEFAULT_SCRIPT_URL = "";
 
   let categories = [...DEFAULT_CATEGORIES];
@@ -1295,11 +1234,51 @@
   const rankLabels = ['Choix 1', 'Choix 2', 'Choix 3', 'Choix 4', 'Choix 5', 'Choix 6', 'Choix 7', 'Choix 8', 'Choix 9', 'Choix 10'];
 
   // ============================================
-  // PERSISTENCE
+  // JSONP - Pour contourner CORS avec Google Apps Script
   // ============================================
-  // localStorage stocke UNIQUEMENT l'URL Apps Script (sinon impossible de joindre Google au démarrage)
-  // Catégories, employés, choix : TOUJOURS depuis Google Sheets
+  let jsonpCounter = 0;
+  function jsonp(url, params, timeoutMs) {
+    return new Promise((resolve, reject) => {
+      const callbackName = '__galaJsonp_' + (++jsonpCounter) + '_' + Date.now();
+      const script = document.createElement('script');
+      let timeoutId;
 
+      // Construire l'URL avec callback
+      const urlObj = new URL(url);
+      Object.entries(params || {}).forEach(([k, v]) => urlObj.searchParams.set(k, v));
+      urlObj.searchParams.set('callback', callbackName);
+
+      // Définir le callback global
+      window[callbackName] = (data) => {
+        clearTimeout(timeoutId);
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+        resolve(data);
+      };
+
+      // Gérer les erreurs
+      script.onerror = () => {
+        clearTimeout(timeoutId);
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+        reject(new Error('Erreur de chargement (script.onerror) - URL probablement invalide ou déploiement non public.'));
+      };
+
+      // Timeout
+      timeoutId = setTimeout(() => {
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+        reject(new Error('Timeout après ' + (timeoutMs || 15000) + 'ms - le serveur n\'a pas répondu.'));
+      }, timeoutMs || 15000);
+
+      script.src = urlObj.toString();
+      document.head.appendChild(script);
+    });
+  }
+
+  // ============================================
+  // PERSISTENCE - URL en local, config sur Google
+  // ============================================
   function loadUrlFromLocal() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -1316,13 +1295,10 @@
     } catch (e) { console.warn("Sauvegarde URL impossible :", e); }
   }
 
-  // Charge la config depuis Google Sheets (catégories, employés, choix)
   async function loadConfigFromServer() {
     if (!scriptUrl) return false;
     try {
-      const resp = await fetch(scriptUrl + '?action=getConfig');
-      if (!resp.ok) return false;
-      const data = await resp.json();
+      const data = await jsonp(scriptUrl, { action: 'getConfig' });
       if (data.status === 'ok' && data.config) {
         const cfg = data.config;
         if (Array.isArray(cfg.categories) && cfg.categories.length) categories = cfg.categories;
@@ -1337,19 +1313,18 @@
     }
   }
 
-  // Sauvegarde la config sur Google Sheets
   async function saveConfigToServer() {
     if (!scriptUrl) return false;
     try {
-      const payload = {
-        action: 'saveConfig',
-        config: { categories, employees, choicesPerCategory }
-      };
+      // POST en no-cors pour la sauvegarde (pas besoin de lire la réponse)
       await fetch(scriptUrl, {
         method: 'POST',
         mode: 'no-cors',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          action: 'saveConfig',
+          config: { categories, employees, choicesPerCategory }
+        })
       });
       return true;
     } catch (e) {
@@ -1374,7 +1349,6 @@
 
   function renderPoll() {
     renderVoterDropdown();
-
     const container = document.getElementById('categories-container');
     container.innerHTML = '';
 
@@ -1431,11 +1405,11 @@
     const banner = document.getElementById('setup-banner');
     const btn = document.getElementById('submit-btn');
     if (!scriptUrl) {
-      banner.classList.add('show');
-      btn.disabled = true;
+      if (banner) banner.classList.add('show');
+      if (btn) btn.disabled = true;
     } else {
-      banner.classList.remove('show');
-      btn.disabled = false;
+      if (banner) banner.classList.remove('show');
+      if (btn) btn.disabled = false;
     }
   }
 
@@ -1498,7 +1472,7 @@
   }
 
   // ============================================
-  // SOUMISSION → GOOGLE SHEETS
+  // SOUMISSION
   // ============================================
   document.getElementById('poll-form').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -1556,20 +1530,14 @@
     const status = document.getElementById('submit-status');
     btn.disabled = true;
     status.className = 'submit-status loading show';
-    status.innerHTML = '<span class="spinner"></span>Envoi de vos votes en cours...';
+    status.innerHTML = '<span class="spinner"></span>Vérification et envoi...';
 
     try {
-      // On utilise GET avec un paramètre pour pouvoir LIRE la réponse (sinon CORS bloque)
-      // Mais comme la payload est trop grande pour un GET, on garde POST en no-cors
-      // Pour vérifier l'anti-doublon, on fera d'abord un GET de vérification
-      const checkUrl = scriptUrl + '?action=check&voter=' + encodeURIComponent(voterName);
+      // Vérification anti-doublon via JSONP
       let alreadyVoted = false;
       try {
-        const checkResp = await fetch(checkUrl);
-        if (checkResp.ok) {
-          const checkData = await checkResp.json();
-          alreadyVoted = checkData.alreadyVoted === true;
-        }
+        const checkData = await jsonp(scriptUrl, { action: 'check', voter: voterName }, 8000);
+        alreadyVoted = checkData.alreadyVoted === true;
       } catch(err) {
         console.warn("Vérification doublon impossible :", err);
       }
@@ -1581,7 +1549,7 @@
         return;
       }
 
-      // Envoi du vote
+      // Envoi du vote (POST no-cors)
       await fetch(scriptUrl, {
         method: 'POST',
         mode: 'no-cors',
@@ -1589,7 +1557,6 @@
         body: JSON.stringify(payload)
       });
 
-      // Confirmation
       document.getElementById('form-container').style.display = 'none';
       document.querySelector('.admin-trigger').style.display = 'none';
       const confirmation = document.getElementById('confirmation');
@@ -1606,7 +1573,7 @@
   });
 
   // ============================================
-  // ADMIN — MODALES
+  // ADMIN
   // ============================================
   function openModal(id) {
     document.getElementById(id).classList.add('show');
@@ -1631,7 +1598,6 @@
       closeModal('password-modal');
       renderAdminEditors();
       openModal('admin-modal');
-      // Auto-load des résultats si URL configurée
       if (scriptUrl) loadResults();
     } else {
       document.getElementById('password-error').classList.add('show');
@@ -1652,9 +1618,6 @@
     }
   });
 
-  // ============================================
-  // ADMIN — TABS
-  // ============================================
   document.querySelectorAll('.admin-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
@@ -1664,9 +1627,6 @@
     });
   });
 
-  // ============================================
-  // ADMIN — ÉDITEURS
-  // ============================================
   function renderAdminEditors() {
     document.getElementById('config-url').value = scriptUrl;
     document.getElementById('setting-choices').value = choicesPerCategory;
@@ -1736,9 +1696,11 @@
     });
   }
 
-  function saveAdminChanges() {
+  async function saveAdminChanges() {
     captureEditorValues();
     scriptUrl = document.getElementById('config-url').value.trim();
+    saveUrlToLocal();
+
     categories = categories.map(c => c.trim()).filter(c => c.length > 0);
     employees = employees.map(e => e.trim()).filter(e => e.length > 0);
     employees.sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
@@ -1764,10 +1726,8 @@
       return;
     }
 
-    saveUrlToLocal(); // Seule l'URL est sauvegardée en local
     renderPoll();
 
-    // Synchronisation Google (obligatoire pour les catégories/employés/choix)
     const trigger = document.getElementById('admin-trigger');
     const original = trigger.textContent;
     trigger.textContent = '⏳ Sync...';
@@ -1775,36 +1735,23 @@
     trigger.style.borderColor = 'var(--gold)';
 
     if (scriptUrl) {
-      saveConfigToServer().then(success => {
-        if (success) {
-          trigger.textContent = '✓ Synchronisé';
-          updateSyncIndicator(true);
-        } else {
-          trigger.textContent = '⚠ Erreur sync';
-          updateSyncIndicator(false);
-          alert("Attention : la sauvegarde sur Google Sheets a échoué. Les modifications ne seront PAS visibles pour les autres utilisateurs. Vérifiez l'URL Apps Script.");
-        }
-        setTimeout(() => {
-          trigger.textContent = original;
-          trigger.style.color = '';
-          trigger.style.borderColor = '';
-        }, 2500);
-      });
+      const success = await saveConfigToServer();
+      trigger.textContent = success ? '✓ Synchronisé' : '⚠ Erreur sync';
     } else {
-      alert("⚠ URL Google Apps Script non configurée. Les modifications ne seront pas sauvegardées de façon permanente.");
       trigger.textContent = '⚠ Pas d\'URL';
-      setTimeout(() => {
-        trigger.textContent = original;
-        trigger.style.color = '';
-        trigger.style.borderColor = '';
-      }, 2000);
     }
+
+    setTimeout(() => {
+      trigger.textContent = original;
+      trigger.style.color = '';
+      trigger.style.borderColor = '';
+    }, 2500);
 
     closeModal('admin-modal');
   }
 
   function resetToDefaults() {
-    if (!confirm("Réinitialiser aux valeurs par défaut ? Cette action écrasera la configuration sur Google Sheets.")) return;
+    if (!confirm("Réinitialiser aux valeurs par défaut ?")) return;
     categories = [...DEFAULT_CATEGORIES];
     employees = [...DEFAULT_EMPLOYEES];
     choicesPerCategory = 3;
@@ -1845,29 +1792,25 @@
     status.style.background = 'rgba(201, 169, 97, 0.1)';
     status.style.borderColor = 'var(--gold-dark)';
     status.style.color = 'var(--gold)';
-    status.innerHTML = '<span class="spinner"></span> Test en cours...';
+    status.innerHTML = '<span class="spinner"></span> Test en cours (JSONP)...';
 
     try {
-      // Test via GET (lecture possible)
-      const resp = await fetch(url + '?action=ping');
-      if (resp.ok) {
-        const data = await resp.json();
-        if (data.status === 'ok') {
-          status.className = 'status-message success show';
-          status.textContent = '✓ Connexion réussie. Le script répond correctement.';
-          return;
-        }
+      const data = await jsonp(url, { action: 'ping' }, 12000);
+      if (data.status === 'ok') {
+        status.className = 'status-message success show';
+        status.textContent = '✓ Connexion réussie. Le script répond correctement.';
+      } else {
+        status.className = 'status-message error show';
+        status.textContent = '⚠️ Réponse inattendue : ' + JSON.stringify(data);
       }
-      status.className = 'status-message error show';
-      status.textContent = '⚠️ Le script répond mais pas comme attendu. Vérifiez le code Apps Script.';
     } catch (err) {
       status.className = 'status-message error show';
-      status.textContent = '❌ Impossible de joindre l\'URL. Vérifiez l\'URL et le déploiement public.';
+      status.innerHTML = '❌ ' + err.message + '<br><small>Vérifiez que le code Apps Script v5 est bien déployé (avec gestion JSONP).</small>';
     }
   }
 
   // ============================================
-  // RÉSULTATS - Récupération depuis Google Sheets
+  // RÉSULTATS
   // ============================================
   async function loadResults() {
     const resultsContent = document.getElementById('results-content');
@@ -1885,10 +1828,7 @@
     resultsStats.innerHTML = '';
 
     try {
-      const resp = await fetch(scriptUrl + '?action=results');
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      const data = await resp.json();
-
+      const data = await jsonp(scriptUrl, { action: 'results' }, 15000);
       if (data.status !== 'ok') throw new Error(data.message || 'Erreur inconnue');
 
       currentResults = data;
@@ -1896,7 +1836,7 @@
       renderVoters(data);
     } catch (err) {
       console.error(err);
-      resultsContent.innerHTML = `<div class="results-loading" style="color: var(--danger-light);">❌ Erreur lors du chargement : ${escapeHtml(err.message)}<br><br>Assurez-vous que le code Apps Script est à jour (avec la fonction <code>doGet</code>).</div>`;
+      resultsContent.innerHTML = `<div class="results-loading" style="color: var(--danger-light);">❌ ${escapeHtml(err.message)}<br><br><small>Assurez-vous que le code Apps Script v5 (avec gestion JSONP) est bien déployé.</small></div>`;
       votersContent.innerHTML = '';
     }
   }
@@ -1931,7 +1871,6 @@
       </div>
     `;
 
-    // Affichage des 4 nominés par catégorie (le #1 = gagnant)
     const tally = data.tally || {};
     let html = '<div class="winners-list">';
     let hasTies = false;
@@ -1954,7 +1893,6 @@
           </div>
         `;
       } else {
-        // Détecter égalité au #1
         const winnerCount = sorted[0][1];
         const tiedAtTop = sorted.filter(([,c]) => c === winnerCount).length > 1;
         if (tiedAtTop) hasTies = true;
@@ -1975,7 +1913,6 @@
           `;
         });
 
-        // Si moins de 4 nominés, ajouter des emplacements vides
         for (let i = sorted.length; i < 4; i++) {
           nomineesHtml += `
             <div class="nominee-row" style="opacity:0.4;">
@@ -2009,11 +1946,9 @@
 
   function renderVoters(data) {
     const contentEl = document.getElementById('voters-content');
-    const voters = data.voters || []; // [{name, date}, ...]
+    const voters = data.voters || [];
     const votedNames = new Set(voters.map(v => v.name));
     const notVoted = employees.filter(e => !votedNames.has(e));
-
-    // Trier les votants par date (plus récent en haut)
     const sortedVoters = [...voters].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     let html = `
@@ -2048,9 +1983,7 @@
       const d = new Date(iso);
       return d.toLocaleDateString('fr-CA', { day: '2-digit', month: '2-digit' }) + ' ' +
              d.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' });
-    } catch (e) {
-      return '';
-    }
+    } catch (e) { return ''; }
   }
 
   function exportWinners() {
@@ -2077,7 +2010,6 @@
           csv += `"${catName.replace(/"/g,'""')}","${i+1}","${name.replace(/"/g,'""')}","${count}","${statut}","${i === 0 && tiedAtTop ? 'OUI' : ''}"\n`;
         });
       }
-      // ligne vide entre catégories
       csv += '"","","","","",""\n';
     });
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -2093,95 +2025,18 @@
   // INIT
   // ============================================
   loadUrlFromLocal();
+  renderPoll();
 
-  (async () => {
-    // Si pas d'URL configurée, afficher la bannière de setup
-    if (!scriptUrl) {
-      renderPoll();
-      showSetupRequired();
-      return;
-    }
-
-    // Afficher un écran de chargement
-    showLoadingScreen();
-
-    const loaded = await loadConfigFromServer();
-
-    if (loaded) {
-      hideLoadingScreen();
-      renderPoll();
-      console.log("Config chargée depuis Google Sheets.");
-    } else {
-      // Google injoignable - afficher erreur, ne pas rendre le sondage avec config par défaut
-      showConfigError();
-    }
-  })();
-
-  function showSetupRequired() {
-    const banner = document.getElementById('setup-banner');
-    if (banner) {
-      banner.classList.add('show');
-    }
-    const btn = document.getElementById('submit-btn');
-    if (btn) btn.disabled = true;
-  }
-
-  function showLoadingScreen() {
-    const formContainer = document.getElementById('form-container');
-    if (!formContainer) return;
-    formContainer.innerHTML = `
-      <div style="text-align: center; padding: 120px 32px;">
-        <div class="ornament" style="margin-bottom: 24px;">✦ ✦ ✦</div>
-        <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; margin-bottom: 16px;">
-          Chargement <em style="font-style: italic; color: var(--gold); font-weight: 400;">en cours</em>
-        </h1>
-        <p style="color: var(--text-muted); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; margin-bottom: 32px;">
-          Récupération de la configuration depuis Google Sheets...
-        </p>
-        <div style="display: inline-block;"><span class="spinner" style="width: 24px; height: 24px; border-width: 3px;"></span></div>
-      </div>
-    `;
-  }
-
-  function hideLoadingScreen() {
-    // On va re-render le formulaire complet
-    location.reload();
-  }
-
-  function showConfigError() {
-    const formContainer = document.getElementById('form-container');
-    if (!formContainer) return;
-    formContainer.innerHTML = `
-      <div style="text-align: center; padding: 80px 32px;">
-        <div class="ornament" style="margin-bottom: 24px; color: var(--danger-light);">⚠ ⚠ ⚠</div>
-        <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 500; margin-bottom: 16px;">
-          Configuration <em style="font-style: italic; color: var(--danger-light); font-weight: 400;">indisponible</em>
-        </h1>
-        <p style="color: var(--text-muted); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 19px; max-width: 540px; margin: 0 auto 32px;">
-          Impossible de joindre le serveur de configuration. Le sondage ne peut pas démarrer.
-        </p>
-        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 24px; max-width: 540px; margin: 0 auto 32px; text-align: left;">
-          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px; font-family: 'Inter', sans-serif;"><strong style="color: var(--text);">Causes possibles :</strong></p>
-          <ul style="list-style: none; padding: 0; color: var(--text-muted); font-size: 13px; line-height: 1.8;">
-            <li>• Pas de connexion internet</li>
-            <li>• L'URL Google Apps Script n'est pas configurée ou incorrecte</li>
-            <li>• Le déploiement Google Apps Script n'est pas accessible</li>
-          </ul>
-        </div>
-        <button class="submit-btn" onclick="location.reload()" style="margin-right: 8px;">↻ Réessayer</button>
-        <button class="submit-btn secondary" onclick="document.getElementById('admin-trigger').click()">Configuration admin</button>
-      </div>
-    `;
-  }
-
-  function updateSyncIndicator(synced) {
-    const trigger = document.getElementById('admin-trigger');
-    if (!trigger) return;
-    if (synced) {
-      trigger.title = '✓ Configuration synchronisée avec Google Sheets';
-    } else {
-      trigger.title = '⚠ Configuration locale uniquement';
-    }
+  if (scriptUrl) {
+    (async () => {
+      const loaded = await loadConfigFromServer();
+      if (loaded) {
+        renderPoll();
+        console.log("Config chargée depuis Google Sheets.");
+      } else {
+        console.warn("Config par défaut utilisée (Google injoignable ou code Apps Script à mettre à jour).");
+      }
+    })();
   }
 </script>
 
