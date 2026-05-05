@@ -1224,7 +1224,7 @@
 
   const ADMIN_PASSWORD = "Gala!2026";
   const STORAGE_KEY = "galaPollConfig_v5";
-  const DEFAULT_SCRIPT_URL = "";
+  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyKA2IaTty0-f3E0OnTxDeJm4elVVINd6Ys5nniVQx-obl9q4TsV1j6bk3gYOUNsoLJSw/exec";
 
   let categories = [...DEFAULT_CATEGORIES];
   let employees = [...DEFAULT_EMPLOYEES];
@@ -1280,6 +1280,12 @@
   // PERSISTENCE - URL en local, config sur Google
   // ============================================
   function loadUrlFromLocal() {
+    // L'URL codée en dur (DEFAULT_SCRIPT_URL) a priorité.
+    // Le localStorage ne sert qu'à override si DEFAULT_SCRIPT_URL est vide.
+    if (DEFAULT_SCRIPT_URL) {
+      scriptUrl = DEFAULT_SCRIPT_URL;
+      return;
+    }
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
