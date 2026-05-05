@@ -1756,14 +1756,44 @@
     closeModal('admin-modal');
   }
 
-  function resetToDefaults() {
-    if (!confirm("Réinitialiser aux valeurs par défaut ?")) return;
+  async function resetToDefaults() {
+    if (!confirm("⚠️ Réinitialiser aux valeurs par défaut ?\n\nCette action :\n• Remet les 25 catégories par défaut (Catégorie 1, 2, 3...)\n• Remet la liste des 67 employés\n• Remet 3 choix par catégorie\n• Synchronise sur Google Sheets pour TOUT LE MONDE")) return;
+
     categories = [...DEFAULT_CATEGORIES];
     employees = [...DEFAULT_EMPLOYEES];
     choicesPerCategory = 3;
-    if (scriptUrl) saveConfigToServer();
+
+    // Mettre à jour visuellement le panneau admin
     renderAdminEditors();
+
+    // Mettre à jour le sondage
     renderPoll();
+
+    // Synchroniser sur Google
+    const trigger = document.getElementById('admin-trigger');
+    const original = trigger.textContent;
+    trigger.textContent = '⏳ Reset...';
+    trigger.style.color = 'var(--gold)';
+    trigger.style.borderColor = 'var(--gold)';
+
+    if (scriptUrl) {
+      const success = await saveConfigToServer();
+      trigger.textContent = success ? '✓ Réinitialisé' : '⚠ Erreur sync';
+      if (success) {
+        alert("✓ Réinitialisation effectuée et synchronisée sur Google Sheets.");
+      } else {
+        alert("⚠ La réinitialisation locale a réussi mais la synchronisation Google a échoué.");
+      }
+    } else {
+      trigger.textContent = '✓ Réinitialisé';
+      alert("✓ Réinitialisation locale effectuée.");
+    }
+
+    setTimeout(() => {
+      trigger.textContent = original;
+      trigger.style.color = '';
+      trigger.style.borderColor = '';
+    }, 2500);
   }
 
   function exportConfig() {
