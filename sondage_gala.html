@@ -1284,7 +1284,7 @@
   ];
 
   const ADMIN_PASSWORD = "Gala!2026";
-  const STORAGE_KEY = "galaPollConfig_v3";
+  const STORAGE_KEY = "galaPollConfig_v4";
   const DEFAULT_SCRIPT_URL = "";
 
   let categories = [...DEFAULT_CATEGORIES];
@@ -1297,25 +1297,65 @@
   // ============================================
   // PERSISTENCE
   // ============================================
-  function loadConfig() {
+  // localStorage stocke UNIQUEMENT l'URL Apps Script (sinon impossible de joindre Google au démarrage)
+  // Catégories, employés, choix : TOUJOURS depuis Google Sheets
+
+  function loadUrlFromLocal() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const cfg = JSON.parse(saved);
+        if (typeof cfg.scriptUrl === 'string') scriptUrl = cfg.scriptUrl;
+      }
+    } catch (e) { console.warn("URL locale invalide :", e); }
+  }
+
+  function saveUrlToLocal() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ scriptUrl }));
+    } catch (e) { console.warn("Sauvegarde URL impossible :", e); }
+  }
+
+  // Charge la config depuis Google Sheets (catégories, employés, choix)
+  async function loadConfigFromServer() {
+    if (!scriptUrl) return false;
+    try {
+      const resp = await fetch(scriptUrl + '?action=getConfig');
+      if (!resp.ok) return false;
+      const data = await resp.json();
+      if (data.status === 'ok' && data.config) {
+        const cfg = data.config;
         if (Array.isArray(cfg.categories) && cfg.categories.length) categories = cfg.categories;
         if (Array.isArray(cfg.employees) && cfg.employees.length) employees = cfg.employees;
         if (typeof cfg.choicesPerCategory === 'number') choicesPerCategory = cfg.choicesPerCategory;
-        if (typeof cfg.scriptUrl === 'string') scriptUrl = cfg.scriptUrl;
+        return true;
       }
-    } catch (e) { console.warn("Config invalide :", e); }
+      return false;
+    } catch (e) {
+      console.warn("Impossible de charger depuis Google :", e);
+      return false;
+    }
   }
 
-  function saveConfig() {
+  // Sauvegarde la config sur Google Sheets
+  async function saveConfigToServer() {
+    if (!scriptUrl) return false;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        categories, employees, choicesPerCategory, scriptUrl
-      }));
-    } catch (e) { console.warn("Sauvegarde impossible :", e); }
+      const payload = {
+        action: 'saveConfig',
+        config: { categories, employees, choicesPerCategory }
+      };
+      await fetch(scriptUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      return true;
+    } catch (e) {
+      console.warn("Sauvegarde Google impossible :", e);
+      return false;
+    }
   }
 
   // ============================================
@@ -1724,28 +1764,51 @@
       return;
     }
 
-    saveConfig();
+    saveUrlToLocal(); // Seule l'URL est sauvegardée en local
     renderPoll();
-    closeModal('admin-modal');
 
+    // Synchronisation Google (obligatoire pour les catégories/employés/choix)
     const trigger = document.getElementById('admin-trigger');
     const original = trigger.textContent;
-    trigger.textContent = '✓ Sauvegardé';
+    trigger.textContent = '⏳ Sync...';
     trigger.style.color = 'var(--gold)';
     trigger.style.borderColor = 'var(--gold)';
-    setTimeout(() => {
-      trigger.textContent = original;
-      trigger.style.color = '';
-      trigger.style.borderColor = '';
-    }, 2000);
+
+    if (scriptUrl) {
+      saveConfigToServer().then(success => {
+        if (success) {
+          trigger.textContent = '✓ Synchronisé';
+          updateSyncIndicator(true);
+        } else {
+          trigger.textContent = '⚠ Erreur sync';
+          updateSyncIndicator(false);
+          alert("Attention : la sauvegarde sur Google Sheets a échoué. Les modifications ne seront PAS visibles pour les autres utilisateurs. Vérifiez l'URL Apps Script.");
+        }
+        setTimeout(() => {
+          trigger.textContent = original;
+          trigger.style.color = '';
+          trigger.style.borderColor = '';
+        }, 2500);
+      });
+    } else {
+      alert("⚠ URL Google Apps Script non configurée. Les modifications ne seront pas sauvegardées de façon permanente.");
+      trigger.textContent = '⚠ Pas d\'URL';
+      setTimeout(() => {
+        trigger.textContent = original;
+        trigger.style.color = '';
+        trigger.style.borderColor = '';
+      }, 2000);
+    }
+
+    closeModal('admin-modal');
   }
 
   function resetToDefaults() {
-    if (!confirm("Réinitialiser aux valeurs par défaut ?")) return;
+    if (!confirm("Réinitialiser aux valeurs par défaut ? Cette action écrasera la configuration sur Google Sheets.")) return;
     categories = [...DEFAULT_CATEGORIES];
     employees = [...DEFAULT_EMPLOYEES];
     choicesPerCategory = 3;
-    saveConfig();
+    if (scriptUrl) saveConfigToServer();
     renderAdminEditors();
     renderPoll();
   }
@@ -2029,8 +2092,97 @@
   // ============================================
   // INIT
   // ============================================
-  loadConfig();
-  renderPoll();
+  loadUrlFromLocal();
+
+  (async () => {
+    // Si pas d'URL configurée, afficher la bannière de setup
+    if (!scriptUrl) {
+      renderPoll();
+      showSetupRequired();
+      return;
+    }
+
+    // Afficher un écran de chargement
+    showLoadingScreen();
+
+    const loaded = await loadConfigFromServer();
+
+    if (loaded) {
+      hideLoadingScreen();
+      renderPoll();
+      console.log("Config chargée depuis Google Sheets.");
+    } else {
+      // Google injoignable - afficher erreur, ne pas rendre le sondage avec config par défaut
+      showConfigError();
+    }
+  })();
+
+  function showSetupRequired() {
+    const banner = document.getElementById('setup-banner');
+    if (banner) {
+      banner.classList.add('show');
+    }
+    const btn = document.getElementById('submit-btn');
+    if (btn) btn.disabled = true;
+  }
+
+  function showLoadingScreen() {
+    const formContainer = document.getElementById('form-container');
+    if (!formContainer) return;
+    formContainer.innerHTML = `
+      <div style="text-align: center; padding: 120px 32px;">
+        <div class="ornament" style="margin-bottom: 24px;">✦ ✦ ✦</div>
+        <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; margin-bottom: 16px;">
+          Chargement <em style="font-style: italic; color: var(--gold); font-weight: 400;">en cours</em>
+        </h1>
+        <p style="color: var(--text-muted); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; margin-bottom: 32px;">
+          Récupération de la configuration depuis Google Sheets...
+        </p>
+        <div style="display: inline-block;"><span class="spinner" style="width: 24px; height: 24px; border-width: 3px;"></span></div>
+      </div>
+    `;
+  }
+
+  function hideLoadingScreen() {
+    // On va re-render le formulaire complet
+    location.reload();
+  }
+
+  function showConfigError() {
+    const formContainer = document.getElementById('form-container');
+    if (!formContainer) return;
+    formContainer.innerHTML = `
+      <div style="text-align: center; padding: 80px 32px;">
+        <div class="ornament" style="margin-bottom: 24px; color: var(--danger-light);">⚠ ⚠ ⚠</div>
+        <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 500; margin-bottom: 16px;">
+          Configuration <em style="font-style: italic; color: var(--danger-light); font-weight: 400;">indisponible</em>
+        </h1>
+        <p style="color: var(--text-muted); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 19px; max-width: 540px; margin: 0 auto 32px;">
+          Impossible de joindre le serveur de configuration. Le sondage ne peut pas démarrer.
+        </p>
+        <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 4px; padding: 24px; max-width: 540px; margin: 0 auto 32px; text-align: left;">
+          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px; font-family: 'Inter', sans-serif;"><strong style="color: var(--text);">Causes possibles :</strong></p>
+          <ul style="list-style: none; padding: 0; color: var(--text-muted); font-size: 13px; line-height: 1.8;">
+            <li>• Pas de connexion internet</li>
+            <li>• L'URL Google Apps Script n'est pas configurée ou incorrecte</li>
+            <li>• Le déploiement Google Apps Script n'est pas accessible</li>
+          </ul>
+        </div>
+        <button class="submit-btn" onclick="location.reload()" style="margin-right: 8px;">↻ Réessayer</button>
+        <button class="submit-btn secondary" onclick="document.getElementById('admin-trigger').click()">Configuration admin</button>
+      </div>
+    `;
+  }
+
+  function updateSyncIndicator(synced) {
+    const trigger = document.getElementById('admin-trigger');
+    if (!trigger) return;
+    if (synced) {
+      trigger.title = '✓ Configuration synchronisée avec Google Sheets';
+    } else {
+      trigger.title = '⚠ Configuration locale uniquement';
+    }
+  }
 </script>
 
 </body>
