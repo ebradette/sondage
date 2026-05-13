@@ -331,13 +331,52 @@
     min-width: 50px;
   }
 
+  .cat-label-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
   .cat-label {
     font-family: 'Cormorant Garamond', serif;
     font-size: 22px;
     font-weight: 500;
     color: var(--text);
     letter-spacing: -0.2px;
-    flex: 1;
+  }
+
+  .cat-description {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    font-style: italic;
+    border-left: 2px solid var(--gold-dark);
+    padding-left: 10px;
+    margin-top: 2px;
+  }
+
+  .cat-description b, .cat-description strong {
+    font-weight: 600;
+    color: var(--gold-light);
+    font-style: normal;
+  }
+
+  .cat-description i, .cat-description em { font-style: italic; }
+  .cat-description u { text-decoration: underline; }
+
+  .cat-description ul, .cat-description ol {
+    padding-left: 20px;
+    margin: 4px 0;
+    font-style: normal;
+  }
+
+  .cat-description ul li, .cat-description ol li { margin: 2px 0; }
+
+  .cat-description a {
+    color: var(--gold);
+    text-decoration: underline;
   }
 
   .cat-status {
@@ -643,6 +682,154 @@
     gap: 12px;
     align-items: center;
     margin-bottom: 8px;
+  }
+
+  .editor-row-cat {
+    display: grid;
+    grid-template-columns: 50px 1fr 40px;
+    gap: 12px;
+    align-items: start;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .editor-row-cat:last-of-type {
+    border-bottom: none;
+  }
+
+  .editor-row-cat .row-num {
+    padding-top: 12px;
+  }
+
+  .editor-cat-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .editor-cat-name {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 3px;
+    outline: none;
+  }
+
+  .editor-cat-name:focus { border-color: var(--gold); }
+
+  /* Éditeur de texte riche */
+  .rich-editor-wrapper {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--bg);
+    transition: border-color 0.2s ease;
+  }
+
+  .rich-editor-wrapper:focus-within {
+    border-color: var(--gold);
+  }
+
+  .rich-toolbar {
+    display: flex;
+    gap: 2px;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.02);
+    flex-wrap: wrap;
+  }
+
+  .rich-toolbar button {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+  }
+
+  .rich-toolbar button:hover {
+    border-color: var(--border);
+    color: var(--text);
+    background: var(--bg-card);
+  }
+
+  .rich-toolbar button.active {
+    border-color: var(--gold-dark);
+    color: var(--gold);
+    background: rgba(201, 169, 97, 0.08);
+  }
+
+  .rich-toolbar .toolbar-sep {
+    width: 1px;
+    background: var(--border);
+    margin: 2px 4px;
+  }
+
+  .rich-toolbar button b { font-weight: 700; }
+  .rich-toolbar button i { font-style: italic; font-family: 'Cormorant Garamond', serif; font-size: 15px; }
+  .rich-toolbar button u { text-decoration: underline; }
+
+  .rich-editable {
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    outline: none;
+    min-height: 50px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .rich-editable:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-muted);
+    font-style: italic;
+    pointer-events: none;
+  }
+
+  .rich-editable b, .rich-editable strong { font-weight: 600; color: var(--text); }
+  .rich-editable i, .rich-editable em { font-style: italic; }
+  .rich-editable u { text-decoration: underline; }
+  .rich-editable ul, .rich-editable ol { padding-left: 20px; margin: 4px 0; }
+  .rich-editable a { color: var(--gold-light); }
+
+  .editor-cat-desc {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 8px 12px;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    font-style: italic;
+    border-radius: 3px;
+    outline: none;
+    resize: vertical;
+    min-height: 40px;
+    line-height: 1.4;
+  }
+
+  .editor-cat-desc:focus {
+    border-color: var(--gold);
+    color: var(--text);
+  }
+
+  .editor-row-cat .btn-remove {
+    margin-top: 8px;
   }
 
   .editor-row .row-num {
@@ -1025,7 +1212,9 @@
     .category { padding: 20px; }
     .cat-header { flex-wrap: wrap; gap: 12px; }
     .cat-number { font-size: 28px; min-width: auto; }
-    .cat-label { flex-basis: 100%; order: 3; }
+    .cat-label-group { flex-basis: 100%; order: 3; }
+    .cat-label { font-size: 18px; }
+    .cat-description { font-size: 12px; }
     .cat-status { order: 2; }
     .selection-row { grid-template-columns: 1fr; gap: 6px; }
     .selection-rank { text-align: left; font-size: 12px; }
@@ -1204,7 +1393,27 @@
   // ============================================
   // CONFIGURATION PAR DÉFAUT
   // ============================================
-  const DEFAULT_CATEGORIES = Array.from({length: 25}, (_, i) => `Catégorie ${i + 1}`);
+  const DEFAULT_CATEGORIES = Array.from({length: 25}, (_, i) => ({
+    name: `Catégorie ${i + 1}`,
+    description: ''
+  }));
+
+  // Compatibilité : normalise une catégorie (string -> objet)
+  function normalizeCategory(cat) {
+    if (typeof cat === 'string') return { name: cat, description: '' };
+    if (cat && typeof cat === 'object') {
+      return {
+        name: String(cat.name || cat.nom || ''),
+        description: String(cat.description || cat.desc || '')
+      };
+    }
+    return { name: '', description: '' };
+  }
+
+  function normalizeCategories(cats) {
+    if (!Array.isArray(cats)) return [];
+    return cats.map(normalizeCategory).filter(c => c.name.length > 0);
+  }
 
   const DEFAULT_EMPLOYEES = [
     "Alex Arseneault","Alex Poirier","Alexandre Fortin","Alexandre Gagné","Alexandre Lessard",
@@ -1308,7 +1517,7 @@
       const data = await jsonp(scriptUrl, { action: 'getConfig' });
       if (data.status === 'ok' && data.config) {
         const cfg = data.config;
-        if (Array.isArray(cfg.categories) && cfg.categories.length) categories = cfg.categories;
+        if (Array.isArray(cfg.categories) && cfg.categories.length) categories = normalizeCategories(cfg.categories);
         if (Array.isArray(cfg.employees) && cfg.employees.length) employees = cfg.employees;
         if (typeof cfg.choicesPerCategory === 'number') choicesPerCategory = cfg.choicesPerCategory;
         return true;
@@ -1375,7 +1584,8 @@
     const container = document.getElementById('categories-container');
     container.innerHTML = '';
 
-    categories.forEach((catName, idx) => {
+    categories.forEach((cat, idx) => {
+      const catObj = normalizeCategory(cat);
       const i = idx + 1;
       const num = String(i).padStart(2, '0');
       const catDiv = document.createElement('div');
@@ -1401,10 +1611,17 @@
         `;
       }
 
+      const descriptionHtml = catObj.description.trim()
+        ? `<div class="cat-description">${sanitizeRichHtml(catObj.description)}</div>`
+        : '';
+
       catDiv.innerHTML = `
         <div class="cat-header">
           <div class="cat-number">${num}</div>
-          <div class="cat-label">${escapeHtml(catName)}</div>
+          <div class="cat-label-group">
+            <div class="cat-label">${escapeHtml(catObj.name)}</div>
+            ${descriptionHtml}
+          </div>
           <div class="cat-status" id="status-${i}">0 / ${choicesPerCategory}</div>
         </div>
         <div class="selections">${selectionsHtml}</div>
@@ -1440,6 +1657,51 @@
     return String(str).replace(/[&<>"']/g, m => ({
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
     }[m]));
+  }
+
+  // Sanitize HTML pour autoriser uniquement le formatage de base (b, strong, i, em, u, ul, ol, li, br, p, a)
+  // Empêche les scripts et autres balises dangereuses
+  function sanitizeRichHtml(html) {
+    if (!html) return '';
+    const allowedTags = ['B', 'STRONG', 'I', 'EM', 'U', 'UL', 'OL', 'LI', 'BR', 'P', 'A', 'DIV', 'SPAN'];
+    const allowedAttrs = { 'A': ['href', 'target', 'rel'] };
+
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+
+    function clean(node) {
+      const children = Array.from(node.childNodes);
+      children.forEach(child => {
+        if (child.nodeType === 1) { // Element
+          const tag = child.tagName;
+          if (!allowedTags.includes(tag)) {
+            // Remplacer par son contenu texte
+            const text = document.createTextNode(child.textContent);
+            child.parentNode.replaceChild(text, child);
+          } else {
+            // Nettoyer les attributs
+            const attrs = Array.from(child.attributes);
+            attrs.forEach(attr => {
+              const allowed = allowedAttrs[tag] || [];
+              if (!allowed.includes(attr.name.toLowerCase())) {
+                child.removeAttribute(attr.name);
+              }
+              // Sécurité supplémentaire pour href
+              if (attr.name.toLowerCase() === 'href') {
+                const val = attr.value.toLowerCase().trim();
+                if (val.startsWith('javascript:') || val.startsWith('data:')) {
+                  child.removeAttribute('href');
+                }
+              }
+            });
+            clean(child);
+          }
+        }
+      });
+    }
+
+    clean(temp);
+    return temp.innerHTML;
   }
 
   // ============================================
@@ -1531,12 +1793,13 @@
     }
 
     const votes = [];
-    categories.forEach((catName, idx) => {
+    categories.forEach((cat, idx) => {
+      const catObj = normalizeCategory(cat);
       const i = idx + 1;
       const selects = document.querySelectorAll(`select[data-cat="${i}"]`);
       Array.from(selects).forEach((s, j) => {
         votes.push({
-          categorie: catName,
+          categorie: catObj.name,
           rang: j + 1,
           vote: s.value || ''
         });
@@ -1668,7 +1931,7 @@
     const editor = document.getElementById('categories-editor');
     editor.innerHTML = '';
     categories.forEach((cat, idx) => {
-      editor.appendChild(createEditorRow(idx + 1, cat, 'cat', idx));
+      editor.appendChild(createCategoryEditorRow(idx + 1, normalizeCategory(cat), idx));
     });
   }
 
@@ -1678,6 +1941,59 @@
     employees.forEach((emp, idx) => {
       editor.appendChild(createEditorRow(idx + 1, emp, 'emp', idx));
     });
+  }
+
+  function createCategoryEditorRow(num, catObj, idx) {
+    const row = document.createElement('div');
+    row.className = 'editor-row-cat';
+    row.innerHTML = `
+      <div class="row-num">${num}</div>
+      <div class="editor-cat-fields">
+        <input type="text" class="editor-cat-name" value="${escapeHtml(catObj.name)}" data-type="cat-name" data-idx="${idx}" placeholder="Nom de la catégorie">
+        <div class="rich-editor-wrapper">
+          <div class="rich-toolbar">
+            <button type="button" data-cmd="bold" title="Gras (Ctrl+B)"><b>B</b></button>
+            <button type="button" data-cmd="italic" title="Italique (Ctrl+I)"><i>I</i></button>
+            <button type="button" data-cmd="underline" title="Souligné (Ctrl+U)"><u>U</u></button>
+            <div class="toolbar-sep"></div>
+            <button type="button" data-cmd="insertUnorderedList" title="Liste à puces">•</button>
+            <button type="button" data-cmd="insertOrderedList" title="Liste numérotée">1.</button>
+            <div class="toolbar-sep"></div>
+            <button type="button" data-cmd="removeFormat" title="Effacer le formatage">⌫</button>
+          </div>
+          <div class="rich-editable" contenteditable="true" data-type="cat-desc" data-idx="${idx}" data-placeholder="Description (optionnelle) — visible sous le nom dans le sondage. Utilisez la barre d'outils pour le formatage.">${sanitizeRichHtml(catObj.description)}</div>
+        </div>
+      </div>
+      <button type="button" class="btn-remove" title="Supprimer">×</button>
+    `;
+
+    // Attacher les listeners de la toolbar
+    const editable = row.querySelector('.rich-editable');
+    row.querySelectorAll('.rich-toolbar button').forEach(btn => {
+      btn.addEventListener('mousedown', e => {
+        e.preventDefault(); // Empêche de perdre le focus de l'éditable
+      });
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        const cmd = btn.dataset.cmd;
+        editable.focus();
+        document.execCommand(cmd, false, null);
+      });
+    });
+
+    // Nettoyer le HTML collé (retirer les styles inline, fonts, etc.)
+    editable.addEventListener('paste', e => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, text);
+    });
+
+    row.querySelector('.btn-remove').addEventListener('click', () => {
+      captureEditorValues();
+      categories.splice(idx, 1);
+      renderCategoriesEditor();
+    });
+    return row;
   }
 
   function createEditorRow(num, value, type, idx) {
@@ -1690,10 +2006,7 @@
     `;
     row.querySelector('.btn-remove').addEventListener('click', () => {
       captureEditorValues();
-      if (type === 'cat') {
-        categories.splice(idx, 1);
-        renderCategoriesEditor();
-      } else {
+      if (type === 'emp') {
         employees.splice(idx, 1);
         renderEmployeesEditor();
       }
@@ -1703,7 +2016,7 @@
 
   function addCategoryRow() {
     captureEditorValues();
-    categories.push(`Catégorie ${categories.length + 1}`);
+    categories.push({ name: `Catégorie ${categories.length + 1}`, description: '' });
     renderCategoriesEditor();
   }
 
@@ -1716,10 +2029,34 @@
   }
 
   function captureEditorValues() {
-    document.querySelectorAll('#categories-editor input').forEach(input => {
+    // Catégories : nom (input)
+    document.querySelectorAll('#categories-editor [data-type="cat-name"]').forEach(input => {
       const idx = parseInt(input.dataset.idx);
-      if (!isNaN(idx)) categories[idx] = input.value;
+      if (!isNaN(idx)) {
+        if (!categories[idx] || typeof categories[idx] === 'string') {
+          categories[idx] = normalizeCategory(categories[idx]);
+        }
+        categories[idx].name = input.value;
+      }
     });
+    // Catégories : description (rich editor → innerHTML)
+    document.querySelectorAll('#categories-editor [data-type="cat-desc"]').forEach(el => {
+      const idx = parseInt(el.dataset.idx);
+      if (!isNaN(idx)) {
+        if (!categories[idx] || typeof categories[idx] === 'string') {
+          categories[idx] = normalizeCategory(categories[idx]);
+        }
+        // Récupérer le HTML, le sanitizer pour ne garder que les balises autorisées
+        const html = el.innerHTML.trim();
+        // Si seulement <br> ou vide → vider
+        if (!html || html === '<br>' || html === '<br/>') {
+          categories[idx].description = '';
+        } else {
+          categories[idx].description = sanitizeRichHtml(html);
+        }
+      }
+    });
+    // Employés
     document.querySelectorAll('#employees-editor input').forEach(input => {
       const idx = parseInt(input.dataset.idx);
       if (!isNaN(idx)) employees[idx] = input.value;
@@ -1731,7 +2068,11 @@
     scriptUrl = document.getElementById('config-url').value.trim();
     saveUrlToLocal();
 
-    categories = categories.map(c => c.trim()).filter(c => c.length > 0);
+    // Nettoyer les catégories (objets)
+    categories = categories
+      .map(c => normalizeCategory(c))
+      .map(c => ({ name: c.name.trim(), description: c.description }))
+      .filter(c => c.name.length > 0);
     employees = employees.map(e => e.trim()).filter(e => e.length > 0);
     employees.sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
     const uniqueEmps = [...new Set(employees)];
@@ -1979,7 +2320,9 @@
     let html = '<div class="winners-list">';
     let hasTies = false;
 
-    categories.forEach((catName, idx) => {
+    categories.forEach((cat, idx) => {
+      const catObj = normalizeCategory(cat);
+      const catName = catObj.name;
       const num = String(idx + 1).padStart(2, '0');
       const catTally = tally[catName] || {};
       const sorted = Object.entries(catTally)
@@ -2096,25 +2439,28 @@
       return;
     }
     const tally = currentResults.tally || {};
-    let csv = 'Catégorie,Rang,Nominé,Nombre de votes,Statut,Égalité au 1er\n';
-    categories.forEach(catName => {
+    let csv = 'Catégorie,Description,Rang,Nominé,Nombre de votes,Statut,Égalité au 1er\n';
+    categories.forEach(cat => {
+      const catObj = normalizeCategory(cat);
+      const catName = catObj.name;
+      const catDesc = catObj.description.replace(/\n/g, ' ');
       const catTally = tally[catName] || {};
       const sorted = Object.entries(catTally)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 4);
 
       if (sorted.length === 0) {
-        csv += `"${catName.replace(/"/g,'""')}","-","(aucun vote)","0","-",""\n`;
+        csv += `"${catName.replace(/"/g,'""')}","${catDesc.replace(/"/g,'""')}","-","(aucun vote)","0","-",""\n`;
       } else {
         const winnerCount = sorted[0][1];
         const tiedAtTop = sorted.filter(([,c]) => c === winnerCount).length > 1;
 
         sorted.forEach(([name, count], i) => {
           const statut = i === 0 ? 'GAGNANT' : 'Nominé';
-          csv += `"${catName.replace(/"/g,'""')}","${i+1}","${name.replace(/"/g,'""')}","${count}","${statut}","${i === 0 && tiedAtTop ? 'OUI' : ''}"\n`;
+          csv += `"${catName.replace(/"/g,'""')}","${catDesc.replace(/"/g,'""')}","${i+1}","${name.replace(/"/g,'""')}","${count}","${statut}","${i === 0 && tiedAtTop ? 'OUI' : ''}"\n`;
         });
       }
-      csv += '"","","","","",""\n';
+      csv += '"","","","","","",""\n';
     });
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
