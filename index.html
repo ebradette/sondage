@@ -398,6 +398,45 @@
     align-items: center;
   }
 
+  /* Mode équipe */
+  .category.team-mode {
+    border-left: 3px solid var(--gold-dark);
+  }
+
+  .team-badge {
+    display: inline-block;
+    background: rgba(201, 169, 97, 0.15);
+    border: 1px solid var(--gold-dark);
+    color: var(--gold);
+    font-size: 10px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 3px;
+    margin-left: 8px;
+    vertical-align: middle;
+    font-style: normal;
+  }
+
+  .team-selects {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .team-plus {
+    color: var(--gold);
+    font-size: 18px;
+    font-weight: 500;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    text-align: center;
+    padding: 0 4px;
+  }
+
   .selection-rank {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
@@ -832,6 +871,64 @@
     margin-top: 8px;
   }
 
+  /* Toggle Mode équipe */
+  .team-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px 4px;
+    user-select: none;
+  }
+
+  .team-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .team-toggle-track {
+    width: 36px;
+    height: 20px;
+    background: var(--border);
+    border-radius: 10px;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+  }
+
+  .team-toggle-track::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    top: 3px;
+    left: 3px;
+    transition: all 0.2s ease;
+  }
+
+  .team-toggle input:checked + .team-toggle-track {
+    background: var(--gold-dark);
+  }
+
+  .team-toggle input:checked + .team-toggle-track::after {
+    background: var(--gold);
+    left: 19px;
+  }
+
+  .team-toggle-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .team-toggle input:checked ~ .team-toggle-label {
+    color: var(--gold);
+  }
+
   .editor-row .row-num {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
@@ -1218,6 +1315,8 @@
     .cat-status { order: 2; }
     .selection-row { grid-template-columns: 1fr; gap: 6px; }
     .selection-rank { text-align: left; font-size: 12px; }
+    .team-selects { grid-template-columns: 1fr; gap: 6px; }
+    .team-plus { display: none; }
     .progress-bar { flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
     .progress-track { order: 3; width: 100%; margin: 0; flex-basis: 100%; }
     .modal { padding: 28px 20px; }
@@ -1400,14 +1499,15 @@
 
   // Compatibilité : normalise une catégorie (string -> objet)
   function normalizeCategory(cat) {
-    if (typeof cat === 'string') return { name: cat, description: '' };
+    if (typeof cat === 'string') return { name: cat, description: '', teamMode: false };
     if (cat && typeof cat === 'object') {
       return {
         name: String(cat.name || cat.nom || ''),
-        description: String(cat.description || cat.desc || '')
+        description: String(cat.description || cat.desc || ''),
+        teamMode: cat.teamMode === true
       };
     }
-    return { name: '', description: '' };
+    return { name: '', description: '', teamMode: false };
   }
 
   function normalizeCategories(cats) {
@@ -1590,6 +1690,7 @@
       const num = String(i).padStart(2, '0');
       const catDiv = document.createElement('div');
       catDiv.className = 'category';
+      if (catObj.teamMode) catDiv.classList.add('team-mode');
       catDiv.id = `category-${i}`;
 
       let selectionsHtml = '';
@@ -1598,28 +1699,56 @@
         employees.forEach(emp => {
           optionsHtml += `<option value="${escapeHtml(emp)}">${escapeHtml(emp)}</option>`;
         });
-        const rankLabel = rankLabels[j-1] || `Choix ${j}`;
-        selectionsHtml += `
-          <div class="selection-row">
-            <div class="selection-rank">${rankLabel}</div>
-            <div class="select-wrapper">
-              <select id="select-${i}-${j}" name="cat${i}_choix${j}" data-cat="${i}" data-choice="${j}">
-                ${optionsHtml}
-              </select>
+        const rankLabel = catObj.teamMode ? `Équipe ${j}` : (rankLabels[j-1] || `Choix ${j}`);
+
+        if (catObj.teamMode) {
+          // Mode équipe : 2 dropdowns côte à côte
+          selectionsHtml += `
+            <div class="selection-row team-row">
+              <div class="selection-rank">${rankLabel}</div>
+              <div class="team-selects">
+                <div class="select-wrapper">
+                  <select id="select-${i}-${j}-a" name="cat${i}_equipe${j}_a" data-cat="${i}" data-choice="${j}" data-team="a">
+                    ${optionsHtml}
+                  </select>
+                </div>
+                <span class="team-plus">+</span>
+                <div class="select-wrapper">
+                  <select id="select-${i}-${j}-b" name="cat${i}_equipe${j}_b" data-cat="${i}" data-choice="${j}" data-team="b">
+                    ${optionsHtml}
+                  </select>
+                </div>
+              </div>
             </div>
-          </div>
-        `;
+          `;
+        } else {
+          // Mode normal : 1 dropdown
+          selectionsHtml += `
+            <div class="selection-row">
+              <div class="selection-rank">${rankLabel}</div>
+              <div class="select-wrapper">
+                <select id="select-${i}-${j}" name="cat${i}_choix${j}" data-cat="${i}" data-choice="${j}">
+                  ${optionsHtml}
+                </select>
+              </div>
+            </div>
+          `;
+        }
       }
 
       const descriptionHtml = catObj.description.trim()
         ? `<div class="cat-description">${sanitizeRichHtml(catObj.description)}</div>`
         : '';
 
+      const teamBadge = catObj.teamMode
+        ? '<span class="team-badge">👥 Mode équipe</span>'
+        : '';
+
       catDiv.innerHTML = `
         <div class="cat-header">
           <div class="cat-number">${num}</div>
           <div class="cat-label-group">
-            <div class="cat-label">${escapeHtml(catObj.name)}</div>
+            <div class="cat-label">${escapeHtml(catObj.name)} ${teamBadge}</div>
             ${descriptionHtml}
           </div>
           <div class="cat-status" id="status-${i}">0 / ${choicesPerCategory}</div>
@@ -1711,49 +1840,141 @@
   const progressCount = document.getElementById('progress-count');
 
   function updateCategoryDuplicates(catNum) {
+    const catIdx = parseInt(catNum) - 1;
+    const catObj = normalizeCategory(categories[catIdx]);
+    const isTeam = catObj.teamMode;
+
     const selects = document.querySelectorAll(`select[data-cat="${catNum}"]`);
-    const selectedValues = Array.from(selects).map(s => s.value).filter(v => v);
 
-    selects.forEach(currentSelect => {
-      const otherSelectedValues = Array.from(selects)
-        .filter(s => s !== currentSelect)
-        .map(s => s.value)
-        .filter(v => v);
+    if (isTeam) {
+      // Mode équipe : 2 dropdowns par choix
+      // Anti-doublon : dans une MÊME équipe (Choix 1), pas la même personne dans A et B
+      // ET : pas la même personne dans 2 équipes différentes du même choix?
+      // → Question : peut-on avoir la même personne dans plusieurs équipes (équipe 1 ET équipe 2)?
+      //   Réponse logique : OUI (une personne peut être dans plusieurs binômes potentiels)
+      //   On bloque seulement les doublons INTRA-équipe (A == B dans une même équipe)
 
-      Array.from(currentSelect.options).forEach(option => {
-        if (option.value === '') return;
-        option.disabled = otherSelectedValues.includes(option.value);
+      // Grouper les selects par choice
+      const groupedByChoice = {};
+      selects.forEach(s => {
+        const choice = s.dataset.choice;
+        if (!groupedByChoice[choice]) groupedByChoice[choice] = [];
+        groupedByChoice[choice].push(s);
       });
 
-      if (currentSelect.value) currentSelect.classList.add('has-value');
-      else currentSelect.classList.remove('has-value');
-    });
+      // Pour chaque choix, désactiver l'autre personne du même choix
+      Object.values(groupedByChoice).forEach(pair => {
+        pair.forEach(currentSelect => {
+          const otherInTeam = pair
+            .filter(s => s !== currentSelect)
+            .map(s => s.value)
+            .filter(v => v);
 
-    const filled = selectedValues.length;
-    const statusEl = document.getElementById(`status-${catNum}`);
-    const catEl = document.getElementById(`category-${catNum}`);
+          Array.from(currentSelect.options).forEach(option => {
+            if (option.value === '') return;
+            option.disabled = otherInTeam.includes(option.value);
+          });
 
-    catEl.classList.remove('complete', 'partial');
-    if (filled === choicesPerCategory) {
-      statusEl.classList.add('complete');
-      statusEl.textContent = 'Complétée ✓';
-      catEl.classList.add('complete');
-    } else if (filled > 0) {
-      statusEl.classList.remove('complete');
-      statusEl.textContent = `${filled} / ${choicesPerCategory}`;
-      catEl.classList.add('partial');
+          if (currentSelect.value) currentSelect.classList.add('has-value');
+          else currentSelect.classList.remove('has-value');
+        });
+      });
+
+      // Compter les équipes complètes (les 2 dropdowns remplis)
+      let teamsCompleted = 0;
+      Object.values(groupedByChoice).forEach(pair => {
+        const filledInPair = pair.filter(s => s.value).length;
+        if (filledInPair === 2) teamsCompleted++;
+      });
+
+      const statusEl = document.getElementById(`status-${catNum}`);
+      const catEl = document.getElementById(`category-${catNum}`);
+
+      catEl.classList.remove('complete', 'partial');
+      if (teamsCompleted === choicesPerCategory) {
+        statusEl.classList.add('complete');
+        statusEl.textContent = 'Complétée ✓';
+        catEl.classList.add('complete');
+      } else if (teamsCompleted > 0 || selects.some(s => s.value)) {
+        statusEl.classList.remove('complete');
+        statusEl.textContent = `${teamsCompleted} / ${choicesPerCategory} équipes`;
+        catEl.classList.add('partial');
+      } else {
+        statusEl.classList.remove('complete');
+        statusEl.textContent = `0 / ${choicesPerCategory} équipes`;
+      }
+
     } else {
-      statusEl.classList.remove('complete');
-      statusEl.textContent = `0 / ${choicesPerCategory}`;
+      // Mode normal (code original)
+      const selectedValues = Array.from(selects).map(s => s.value).filter(v => v);
+
+      selects.forEach(currentSelect => {
+        const otherSelectedValues = Array.from(selects)
+          .filter(s => s !== currentSelect)
+          .map(s => s.value)
+          .filter(v => v);
+
+        Array.from(currentSelect.options).forEach(option => {
+          if (option.value === '') return;
+          option.disabled = otherSelectedValues.includes(option.value);
+        });
+
+        if (currentSelect.value) currentSelect.classList.add('has-value');
+        else currentSelect.classList.remove('has-value');
+      });
+
+      const filled = selectedValues.length;
+      const statusEl = document.getElementById(`status-${catNum}`);
+      const catEl = document.getElementById(`category-${catNum}`);
+
+      catEl.classList.remove('complete', 'partial');
+      if (filled === choicesPerCategory) {
+        statusEl.classList.add('complete');
+        statusEl.textContent = 'Complétée ✓';
+        catEl.classList.add('complete');
+      } else if (filled > 0) {
+        statusEl.classList.remove('complete');
+        statusEl.textContent = `${filled} / ${choicesPerCategory}`;
+        catEl.classList.add('partial');
+      } else {
+        statusEl.classList.remove('complete');
+        statusEl.textContent = `0 / ${choicesPerCategory}`;
+      }
     }
   }
 
   function updateProgress() {
-    const allSelects = document.querySelectorAll('select[data-cat]');
-    const filled = Array.from(allSelects).filter(s => s.value).length;
-    const totalVotes = categories.length * choicesPerCategory;
-    progressCount.textContent = filled;
-    progressFill.style.width = (filled / totalVotes * 100) + '%';
+    let totalFilled = 0;
+    let totalRequired = 0;
+
+    categories.forEach((cat, idx) => {
+      const catObj = normalizeCategory(cat);
+      const catNum = idx + 1;
+
+      if (catObj.teamMode) {
+        // Mode équipe : 2 dropdowns par choix, mais on compte les ÉQUIPES COMPLÈTES
+        const selects = Array.from(document.querySelectorAll(`select[data-cat="${catNum}"]`));
+        const groupedByChoice = {};
+        selects.forEach(s => {
+          const choice = s.dataset.choice;
+          if (!groupedByChoice[choice]) groupedByChoice[choice] = [];
+          groupedByChoice[choice].push(s);
+        });
+        Object.values(groupedByChoice).forEach(pair => {
+          if (pair.filter(s => s.value).length === 2) totalFilled++;
+          totalRequired++;
+        });
+      } else {
+        // Mode normal : 1 dropdown par choix
+        const selects = document.querySelectorAll(`select[data-cat="${catNum}"]`);
+        totalFilled += Array.from(selects).filter(s => s.value).length;
+        totalRequired += choicesPerCategory;
+      }
+    });
+
+    progressCount.textContent = totalFilled;
+    document.getElementById('progress-total').textContent = totalRequired;
+    progressFill.style.width = (totalRequired > 0 ? (totalFilled / totalRequired * 100) : 0) + '%';
   }
 
   // ============================================
@@ -1776,11 +1997,25 @@
     }
 
     const incomplete = [];
-    for (let i = 1; i <= categories.length; i++) {
-      const selects = document.querySelectorAll(`select[data-cat="${i}"]`);
-      const filled = Array.from(selects).filter(s => s.value).length;
-      if (filled < choicesPerCategory) incomplete.push(i);
-    }
+    categories.forEach((cat, idx) => {
+      const catObj = normalizeCategory(cat);
+      const i = idx + 1;
+
+      if (catObj.teamMode) {
+        // Compter les équipes complètes (2 dropdowns remplis)
+        let teamsComplete = 0;
+        for (let j = 1; j <= choicesPerCategory; j++) {
+          const a = document.getElementById(`select-${i}-${j}-a`);
+          const b = document.getElementById(`select-${i}-${j}-b`);
+          if (a && b && a.value && b.value) teamsComplete++;
+        }
+        if (teamsComplete < choicesPerCategory) incomplete.push(i);
+      } else {
+        const selects = document.querySelectorAll(`select[data-cat="${i}"]`);
+        const filled = Array.from(selects).filter(s => s.value).length;
+        if (filled < choicesPerCategory) incomplete.push(i);
+      }
+    });
 
     if (incomplete.length > 0) {
       const proceed = confirm(
@@ -1796,14 +2031,44 @@
     categories.forEach((cat, idx) => {
       const catObj = normalizeCategory(cat);
       const i = idx + 1;
-      const selects = document.querySelectorAll(`select[data-cat="${i}"]`);
-      Array.from(selects).forEach((s, j) => {
-        votes.push({
-          categorie: catObj.name,
-          rang: j + 1,
-          vote: s.value || ''
+
+      if (catObj.teamMode) {
+        // Mode équipe : pour chaque choix, combiner les 2 personnes en une paire
+        for (let j = 1; j <= choicesPerCategory; j++) {
+          const a = document.getElementById(`select-${i}-${j}-a`);
+          const b = document.getElementById(`select-${i}-${j}-b`);
+          const valA = (a && a.value) || '';
+          const valB = (b && b.value) || '';
+
+          // Trier alphabétiquement pour que "Marie + Pierre" et "Pierre + Marie" comptent comme la même équipe
+          let pairValue = '';
+          if (valA && valB) {
+            const sorted = [valA, valB].sort((x, y) => x.localeCompare(y, 'fr'));
+            pairValue = sorted[0] + ' + ' + sorted[1];
+          } else if (valA || valB) {
+            // Équipe incomplète : on stocke quand même ce qu'on a (pour debug)
+            pairValue = (valA || '') + ' + ' + (valB || '');
+          }
+
+          votes.push({
+            categorie: catObj.name,
+            rang: j,
+            vote: pairValue,
+            mode: 'team'
+          });
+        }
+      } else {
+        // Mode normal
+        const selects = document.querySelectorAll(`select[data-cat="${i}"]`);
+        Array.from(selects).forEach((s, j) => {
+          votes.push({
+            categorie: catObj.name,
+            rang: j + 1,
+            vote: s.value || '',
+            mode: 'solo'
+          });
         });
-      });
+      }
     });
 
     const payload = {
@@ -1946,6 +2211,7 @@
   function createCategoryEditorRow(num, catObj, idx) {
     const row = document.createElement('div');
     row.className = 'editor-row-cat';
+    const teamChecked = catObj.teamMode ? 'checked' : '';
     row.innerHTML = `
       <div class="row-num">${num}</div>
       <div class="editor-cat-fields">
@@ -1963,6 +2229,11 @@
           </div>
           <div class="rich-editable" contenteditable="true" data-type="cat-desc" data-idx="${idx}" data-placeholder="Description (optionnelle) — visible sous le nom dans le sondage. Utilisez la barre d'outils pour le formatage.">${sanitizeRichHtml(catObj.description)}</div>
         </div>
+        <label class="team-toggle">
+          <input type="checkbox" data-type="cat-team" data-idx="${idx}" ${teamChecked}>
+          <span class="team-toggle-track"></span>
+          <span class="team-toggle-label">👥 Mode équipe — Le votant choisit 2 personnes par équipe</span>
+        </label>
       </div>
       <button type="button" class="btn-remove" title="Supprimer">×</button>
     `;
@@ -1971,7 +2242,7 @@
     const editable = row.querySelector('.rich-editable');
     row.querySelectorAll('.rich-toolbar button').forEach(btn => {
       btn.addEventListener('mousedown', e => {
-        e.preventDefault(); // Empêche de perdre le focus de l'éditable
+        e.preventDefault();
       });
       btn.addEventListener('click', e => {
         e.preventDefault();
@@ -1981,7 +2252,6 @@
       });
     });
 
-    // Nettoyer le HTML collé (retirer les styles inline, fonts, etc.)
     editable.addEventListener('paste', e => {
       e.preventDefault();
       const text = (e.clipboardData || window.clipboardData).getData('text/plain');
@@ -2046,14 +2316,22 @@
         if (!categories[idx] || typeof categories[idx] === 'string') {
           categories[idx] = normalizeCategory(categories[idx]);
         }
-        // Récupérer le HTML, le sanitizer pour ne garder que les balises autorisées
         const html = el.innerHTML.trim();
-        // Si seulement <br> ou vide → vider
         if (!html || html === '<br>' || html === '<br/>') {
           categories[idx].description = '';
         } else {
           categories[idx].description = sanitizeRichHtml(html);
         }
+      }
+    });
+    // Catégories : mode équipe (checkbox)
+    document.querySelectorAll('#categories-editor [data-type="cat-team"]').forEach(cb => {
+      const idx = parseInt(cb.dataset.idx);
+      if (!isNaN(idx)) {
+        if (!categories[idx] || typeof categories[idx] === 'string') {
+          categories[idx] = normalizeCategory(categories[idx]);
+        }
+        categories[idx].teamMode = cb.checked;
       }
     });
     // Employés
@@ -2071,7 +2349,7 @@
     // Nettoyer les catégories (objets)
     categories = categories
       .map(c => normalizeCategory(c))
-      .map(c => ({ name: c.name.trim(), description: c.description }))
+      .map(c => ({ name: c.name.trim(), description: c.description, teamMode: c.teamMode === true }))
       .filter(c => c.name.length > 0);
     employees = employees.map(e => e.trim()).filter(e => e.length > 0);
     employees.sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
@@ -2323,18 +2601,21 @@
     categories.forEach((cat, idx) => {
       const catObj = normalizeCategory(cat);
       const catName = catObj.name;
+      const isTeam = catObj.teamMode;
       const num = String(idx + 1).padStart(2, '0');
       const catTally = tally[catName] || {};
       const sorted = Object.entries(catTally)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 4);
 
+      const teamBadgeHtml = isTeam ? '<span class="team-badge">👥 Équipes</span>' : '';
+
       if (sorted.length === 0) {
         html += `
-          <div class="category-result empty">
+          <div class="category-result empty${isTeam ? ' team-mode' : ''}">
             <div class="cat-result-header">
               <div class="cat-result-num">${num}</div>
-              <div class="cat-result-name">${escapeHtml(catName)}</div>
+              <div class="cat-result-name">${escapeHtml(catName)} ${teamBadgeHtml}</div>
             </div>
             <div class="cat-result-empty-msg">Aucun vote pour le moment.</div>
           </div>
@@ -2349,9 +2630,10 @@
           const [name, count] = entry;
           const isWinner = i === 0;
           const isTiedHere = isWinner && tiedAtTop;
+          const rankLabel = isTeam ? 'Équipe ' + (i + 1) : (i + 1);
           nomineesHtml += `
             <div class="nominee-row${isWinner ? ' winner' : ''}${isTiedHere ? ' tied' : ''}">
-              <div class="nominee-rank">${i + 1}</div>
+              <div class="nominee-rank">${rankLabel}</div>
               <div class="nominee-name">
                 ${escapeHtml(name)}${isWinner ? '<span class="crown">👑</span>' : ''}
               </div>
@@ -2361,9 +2643,10 @@
         });
 
         for (let i = sorted.length; i < 4; i++) {
+          const rankLabel = isTeam ? 'Équipe ' + (i + 1) : (i + 1);
           nomineesHtml += `
             <div class="nominee-row" style="opacity:0.4;">
-              <div class="nominee-rank">${i + 1}</div>
+              <div class="nominee-rank">${rankLabel}</div>
               <div class="nominee-name" style="font-style:italic; color: var(--text-muted);">— Pas assez de votes —</div>
               <div class="nominee-votes">—</div>
             </div>
@@ -2371,10 +2654,10 @@
         }
 
         html += `
-          <div class="category-result">
+          <div class="category-result${isTeam ? ' team-mode' : ''}">
             <div class="cat-result-header">
               <div class="cat-result-num">${num}</div>
-              <div class="cat-result-name">${escapeHtml(catName)}</div>
+              <div class="cat-result-name">${escapeHtml(catName)} ${teamBadgeHtml}</div>
             </div>
             <div class="nominees-list">${nomineesHtml}</div>
           </div>
@@ -2439,28 +2722,33 @@
       return;
     }
     const tally = currentResults.tally || {};
-    let csv = 'Catégorie,Description,Rang,Nominé,Nombre de votes,Statut,Égalité au 1er\n';
+    let csv = 'Catégorie,Mode,Description,Rang,Nominé,Nombre de votes,Statut,Égalité au 1er\n';
     categories.forEach(cat => {
       const catObj = normalizeCategory(cat);
       const catName = catObj.name;
-      const catDesc = catObj.description.replace(/\n/g, ' ');
+      const mode = catObj.teamMode ? 'Équipe' : 'Solo';
+      // Convertir le HTML de la description en texte simple pour le CSV
+      const descTemp = document.createElement('div');
+      descTemp.innerHTML = catObj.description;
+      const catDesc = (descTemp.textContent || '').replace(/\s+/g, ' ').trim();
       const catTally = tally[catName] || {};
       const sorted = Object.entries(catTally)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 4);
 
       if (sorted.length === 0) {
-        csv += `"${catName.replace(/"/g,'""')}","${catDesc.replace(/"/g,'""')}","-","(aucun vote)","0","-",""\n`;
+        csv += `"${catName.replace(/"/g,'""')}","${mode}","${catDesc.replace(/"/g,'""')}","-","(aucun vote)","0","-",""\n`;
       } else {
         const winnerCount = sorted[0][1];
         const tiedAtTop = sorted.filter(([,c]) => c === winnerCount).length > 1;
 
         sorted.forEach(([name, count], i) => {
           const statut = i === 0 ? 'GAGNANT' : 'Nominé';
-          csv += `"${catName.replace(/"/g,'""')}","${catDesc.replace(/"/g,'""')}","${i+1}","${name.replace(/"/g,'""')}","${count}","${statut}","${i === 0 && tiedAtTop ? 'OUI' : ''}"\n`;
+          const rangLabel = catObj.teamMode ? ('Équipe ' + (i+1)) : (i+1);
+          csv += `"${catName.replace(/"/g,'""')}","${mode}","${catDesc.replace(/"/g,'""')}","${rangLabel}","${name.replace(/"/g,'""')}","${count}","${statut}","${i === 0 && tiedAtTop ? 'OUI' : ''}"\n`;
         });
       }
-      csv += '"","","","","","",""\n';
+      csv += '"","","","","","","",""\n';
     });
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
