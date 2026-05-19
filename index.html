@@ -1037,6 +1037,66 @@
     font-family: 'Inter', sans-serif;
   }
 
+  /* Style des options "Complété" dans le dropdown du votant */
+  .identification select option[data-complete="true"] {
+    color: var(--success);
+    font-style: italic;
+  }
+
+  /* Bannière "Tu as tout complété" */
+  .all-done-banner {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    padding: 40px 32px;
+    margin: 24px 0;
+    background: linear-gradient(135deg, rgba(111, 168, 111, 0.12), rgba(201, 169, 97, 0.08));
+    border: 1px solid var(--success);
+    border-left: 4px solid var(--success);
+    border-radius: 4px;
+    flex-wrap: wrap;
+  }
+
+  .all-done-icon {
+    font-size: 64px;
+    color: var(--success);
+    line-height: 1;
+    font-family: 'Cormorant Garamond', serif;
+    flex-shrink: 0;
+  }
+
+  .all-done-text {
+    flex: 1;
+    min-width: 250px;
+  }
+
+  .all-done-text h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+
+  .all-done-text p {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.6;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .all-done-text p strong {
+    color: var(--success);
+    font-weight: 600;
+  }
+
+  @media (max-width: 600px) {
+    .all-done-banner { flex-direction: column; text-align: center; padding: 28px 20px; }
+    .all-done-icon { font-size: 48px; }
+    .all-done-text h2 { font-size: 26px; }
+  }
+
   /* Indicateur de brouillon restauré (petit toast en bas) */
   .draft-restored-indicator {
     position: fixed;
@@ -2187,6 +2247,8 @@
   let emailTemplates = getDefaultEmailTemplates();
   // Liste des catégories déjà complétées par le votant actuel (pour les cacher)
   let alreadyCompletedCategories = new Set();
+  // Liste des votants qui ont COMPLÈTEMENT terminé le sondage (pour afficher "✓ Complété")
+  let completedVoters = new Set();
   const rankLabels = ['Choix 1', 'Choix 2', 'Choix 3', 'Choix 4', 'Choix 5', 'Choix 6', 'Choix 7', 'Choix 8', 'Choix 9', 'Choix 10'];
 
   // ============================================
@@ -2443,6 +2505,31 @@
     }
   }
 
+  async function loadCompletedVoters() {
+    if (!scriptUrl) return;
+
+    try {
+      const data = await jsonp(scriptUrl, { action: 'results' }, 12000);
+      if (data.status === 'ok') {
+        const votersDetail = data.votersDetail || {};
+        const expectedVotes = categories.length * choicesPerCategory;
+
+        // Construire la liste des votants COMPLÈTEMENT terminés
+        const completed = new Set();
+        Object.entries(votersDetail).forEach(([name, count]) => {
+          if (count >= expectedVotes) {
+            completed.add(name);
+          }
+        });
+        completedVoters = completed;
+        // Re-render le dropdown pour afficher les badges "✓ Complété"
+        renderVoterDropdown();
+      }
+    } catch (e) {
+      console.warn("Impossible de récupérer la liste des votants complétés :", e);
+    }
+  }
+
   async function loadConfigFromServer() {
     if (!scriptUrl) return false;
     try {
@@ -2526,14 +2613,24 @@
   // ============================================
   function renderVoterDropdown() {
     const select = document.getElementById('voter-name');
-    const previousValue = select.value; // Préserver la sélection actuelle
+    const previousValue = select.value;
     select.innerHTML = '<option value="">— Sélectionnez votre nom dans la liste —</option>';
+
     employees.forEach(emp => {
       const name = getEmployeeName(emp);
       if (!name) return;
       const opt = document.createElement('option');
       opt.value = name;
-      opt.textContent = name;
+
+      // Vérifier si cette personne a complété tout le sondage
+      const isComplete = completedVoters.has(name);
+      if (isComplete) {
+        opt.textContent = name + '   ✓ Complété';
+        opt.dataset.complete = 'true';
+      } else {
+        opt.textContent = name;
+      }
+
       if (name === previousValue) opt.selected = true;
       select.appendChild(opt);
     });
@@ -2708,6 +2805,32 @@
         saveDraftDebounced();
       });
     });
+
+    // Si toutes les catégories sont déjà complétées par ce votant, afficher un message spécial
+    const voterNameCheck = document.getElementById('voter-name').value;
+    if (voterNameCheck && alreadyCompletedCategories.size >= categories.length && categories.length > 0) {
+      container.innerHTML = `
+        <div class="all-done-banner">
+          <div class="all-done-icon">✓</div>
+          <div class="all-done-text">
+            <h2>Merci ${escapeHtml(voterNameCheck)}!</h2>
+            <p>Tu as complété <strong>toutes les catégories</strong> du sondage du Gala BGM 40e.</p>
+            <p style="margin-top: 12px; font-style: italic; color: var(--text-muted);">Si tu penses qu'il y a une erreur, contacte l'organisateur.</p>
+          </div>
+        </div>
+      `;
+      // Cacher la barre de progression et le bouton soumettre
+      const progressBar = document.querySelector('.progress-bar');
+      if (progressBar) progressBar.style.display = 'none';
+      const submitSection = document.querySelector('.submit-section');
+      if (submitSection) submitSection.style.display = 'none';
+    } else {
+      // Réafficher si on était passé en mode "tout complet"
+      const progressBar = document.querySelector('.progress-bar');
+      if (progressBar) progressBar.style.display = '';
+      const submitSection = document.querySelector('.submit-section');
+      if (submitSection) submitSection.style.display = '';
+    }
 
     document.getElementById('progress-total').textContent = categories.length * choicesPerCategory;
     updateProgress();
@@ -3194,6 +3317,9 @@
 
       // Brouillon plus nécessaire — vote soumis avec succès
       clearDraft();
+
+      // Recharger la liste des votants complétés (en arrière-plan, pas bloquant)
+      setTimeout(() => loadCompletedVoters(), 1500);
 
     } catch (err) {
       console.error('Erreur envoi:', err);
@@ -4405,6 +4531,8 @@
       } else {
         console.warn("Config par défaut utilisée (Google injoignable ou code Apps Script à mettre à jour).");
       }
+      // Charger la liste des votants déjà complétés (en parallèle, pas bloquant)
+      loadCompletedVoters();
       // Vérifier s'il y a un brouillon à restaurer (APRÈS le chargement de la config)
       setTimeout(checkAndRestoreDraft, 200);
     })();
