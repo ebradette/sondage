@@ -286,6 +286,45 @@
     font-size: 14px;
   }
 
+  .voter-info {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: rgba(201, 169, 97, 0.06);
+    border-left: 2px solid var(--gold-dark);
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-family: 'Inter', sans-serif;
+    border-radius: 0 3px 3px 0;
+  }
+
+  /* Indicateur de sauvegarde du brouillon */
+  .draft-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-card);
+    border: 1px solid var(--gold-dark);
+    color: var(--gold);
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    font-family: 'Inter', sans-serif;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 1001;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .draft-indicator.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
   .instructions {
     text-align: center;
     margin-bottom: 56px;
@@ -1415,6 +1454,7 @@
         <option value="">— Sélectionnez votre nom dans la liste —</option>
       </select>
     </div>
+    <div class="voter-info" id="voter-info">Une fois votre nom sélectionné, vous ne pourrez pas voter pour vous-même.</div>
   </div>
 
   <div class="instructions">
@@ -1595,7 +1635,9 @@
 
   const ADMIN_PASSWORD = "Gala!2026";
   const STORAGE_KEY = "galaPollConfig_v5";
-  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwOvqJ0tPaQbm6uLPk467JZQbFMUdFQIiAMykoyIHPNMuqt-0IOwbAv37uIWIX_jJzvXQ/exec";
+  const DRAFT_KEY = "galaPollDraft_v1";
+  const DRAFT_EXPIRY_DAYS = 30;
+  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_HkauR95GWldW9w1Uv3mzDXVqpIHy5Udg8OK21z1yGNVklsHf5B1P2QzVgvorQ_pI5Q/exec";
 
   let categories = [...DEFAULT_CATEGORIES];
   let employees = [...DEFAULT_EMPLOYEES];
@@ -1674,6 +1716,156 @@
     } catch (e) { console.warn("Sauvegarde URL impossible :", e); }
   }
 
+  // ============================================
+  // BROUILLON LOCAL - Sauvegarde auto des réponses
+  // ============================================
+  let draftSaveTimeout = null;
+
+  function getDraft() {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return null;
+      const draft = JSON.parse(raw);
+
+      // Vérifier expiration
+      if (draft.timestamp) {
+        const ageMs = Date.now() - draft.timestamp;
+        const ageDays = ageMs / (1000 * 60 * 60 * 24);
+        if (ageDays > DRAFT_EXPIRY_DAYS) {
+          clearDraft();
+          return null;
+        }
+      }
+
+      return draft;
+    } catch (e) {
+      console.warn("Lecture brouillon impossible :", e);
+      return null;
+    }
+  }
+
+  function saveDraft() {
+    try {
+      const voterName = document.getElementById('voter-name').value || '';
+      const selections = {};
+
+      // Sauvegarder toutes les sélections (sondage normal + équipe)
+      document.querySelectorAll('select[data-cat]').forEach(s => {
+        if (s.value) {
+          selections[s.id] = s.value;
+        }
+      });
+
+      // Ne pas sauvegarder de brouillon vide
+      if (!voterName && Object.keys(selections).length === 0) {
+        clearDraft();
+        return;
+      }
+
+      const draft = {
+        voter: voterName,
+        selections: selections,
+        timestamp: Date.now()
+      };
+
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      showDraftSavedIndicator();
+    } catch (e) {
+      console.warn("Sauvegarde brouillon impossible :", e);
+    }
+  }
+
+  function saveDraftDebounced() {
+    // Sauvegarder 500ms après le dernier changement pour éviter trop d'écritures
+    if (draftSaveTimeout) clearTimeout(draftSaveTimeout);
+    draftSaveTimeout = setTimeout(saveDraft, 500);
+  }
+
+  function clearDraft() {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch (e) { console.warn("Effacement brouillon impossible :", e); }
+  }
+
+  function restoreDraft(draft) {
+    if (!draft) return false;
+
+    // Restaurer le nom du votant
+    const voterSelect = document.getElementById('voter-name');
+    if (draft.voter && Array.from(voterSelect.options).some(o => o.value === draft.voter)) {
+      voterSelect.value = draft.voter;
+    }
+
+    // Re-render le sondage avec le nom du votant exclu
+    renderPoll();
+
+    // Restaurer les sélections (sauf si elles correspondent au votant)
+    if (draft.selections) {
+      Object.entries(draft.selections).forEach(([id, val]) => {
+        if (val === draft.voter) return; // Skip self-votes
+        const el = document.getElementById(id);
+        if (el) {
+          const optionExists = Array.from(el.options).some(o => o.value === val);
+          if (optionExists) el.value = val;
+        }
+      });
+    }
+
+    // Re-vérifier les doublons dans chaque catégorie
+    for (let i = 1; i <= categories.length; i++) {
+      updateCategoryDuplicates(String(i));
+    }
+    updateProgress();
+
+    return true;
+  }
+
+  function showDraftSavedIndicator() {
+    // Petit indicateur discret en haut à droite
+    let indicator = document.getElementById('draft-indicator');
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.id = 'draft-indicator';
+      indicator.className = 'draft-indicator';
+      document.body.appendChild(indicator);
+    }
+    indicator.textContent = '✓ Brouillon sauvegardé';
+    indicator.classList.add('show');
+    clearTimeout(indicator._hideTimeout);
+    indicator._hideTimeout = setTimeout(() => {
+      indicator.classList.remove('show');
+    }, 1500);
+  }
+
+  function checkAndRestoreDraft() {
+    const draft = getDraft();
+    if (!draft) return;
+    if (!draft.voter && (!draft.selections || Object.keys(draft.selections).length === 0)) {
+      clearDraft();
+      return;
+    }
+
+    // Brouillon existant
+    const voterName = draft.voter || 'quelqu\'un';
+    const numSelections = draft.selections ? Object.keys(draft.selections).length : 0;
+    const draftDate = new Date(draft.timestamp || Date.now()).toLocaleString('fr-CA', {
+      day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+    });
+
+    const message = `📋 Un brouillon existe sur ce navigateur :\n\n` +
+      `• Votant : ${voterName}\n` +
+      `• ${numSelections} choix déjà faits\n` +
+      `• Date : ${draftDate}\n\n` +
+      `Cliquez OK pour CONTINUER ce brouillon.\n` +
+      `Cliquez Annuler pour COMMENCER UN NOUVEAU sondage (le brouillon sera effacé).`;
+
+    if (confirm(message)) {
+      restoreDraft(draft);
+    } else {
+      clearDraft();
+    }
+  }
+
   async function loadConfigFromServer() {
     if (!scriptUrl) return false;
     try {
@@ -1736,19 +1928,66 @@
   // ============================================
   function renderVoterDropdown() {
     const select = document.getElementById('voter-name');
+    const previousValue = select.value; // Préserver la sélection actuelle
     select.innerHTML = '<option value="">— Sélectionnez votre nom dans la liste —</option>';
     employees.forEach(emp => {
       const opt = document.createElement('option');
       opt.value = emp;
       opt.textContent = emp;
+      if (emp === previousValue) opt.selected = true;
       select.appendChild(opt);
     });
+
+    // Attacher le listener une seule fois (drapeau)
+    if (!select.dataset.listenerAttached) {
+      select.addEventListener('change', onVoterChange);
+      select.dataset.listenerAttached = 'true';
+    }
+  }
+
+  function onVoterChange() {
+    // Quand le votant change, re-rendre le sondage en excluant son nom
+    // Mais d'abord, sauvegarder les sélections actuelles pour les restaurer
+    const savedSelections = {};
+    document.querySelectorAll('select[data-cat]').forEach(s => {
+      if (s.value) savedSelections[s.id] = s.value;
+    });
+
+    renderPoll();
+
+    // Restaurer les sélections (sauf celles qui correspondent au votant maintenant exclu)
+    const voterName = document.getElementById('voter-name').value;
+    Object.entries(savedSelections).forEach(([id, val]) => {
+      // Ne pas restaurer si la valeur est le nom du votant
+      if (val === voterName) return;
+      const el = document.getElementById(id);
+      if (el) {
+        // Vérifier que l'option existe toujours dans le select
+        const optionExists = Array.from(el.options).some(o => o.value === val);
+        if (optionExists) el.value = val;
+      }
+    });
+
+    // Re-vérifier les doublons dans chaque catégorie
+    for (let i = 1; i <= categories.length; i++) {
+      updateCategoryDuplicates(String(i));
+    }
+    updateProgress();
+
+    // Sauvegarder le brouillon
+    saveDraftDebounced();
   }
 
   function renderPoll() {
     renderVoterDropdown();
     const container = document.getElementById('categories-container');
     container.innerHTML = '';
+
+    // Récupérer le nom du votant pour l'exclure des choix
+    const voterName = document.getElementById('voter-name').value || '';
+
+    // Liste des employés disponibles comme options (sans le votant)
+    const selectableEmployees = employees.filter(emp => emp !== voterName);
 
     categories.forEach((cat, idx) => {
       const catObj = normalizeCategory(cat);
@@ -1762,7 +2001,7 @@
       let selectionsHtml = '';
       for (let j = 1; j <= choicesPerCategory; j++) {
         let optionsHtml = '<option value="">— Choisir un employé —</option>';
-        employees.forEach(emp => {
+        selectableEmployees.forEach(emp => {
           optionsHtml += `<option value="${escapeHtml(emp)}">${escapeHtml(emp)}</option>`;
         });
         const rankLabel = catObj.teamMode ? `Équipe ${j}` : (rankLabels[j-1] || `Choix ${j}`);
@@ -1828,6 +2067,7 @@
       s.addEventListener('change', () => {
         updateCategoryDuplicates(s.dataset.cat);
         updateProgress();
+        saveDraftDebounced();
       });
     });
 
@@ -2180,6 +2420,9 @@
       confirmation.classList.add('show');
       document.getElementById('thanks-name').textContent = voterName;
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Brouillon plus nécessaire — vote soumis avec succès
+      clearDraft();
 
     } catch (err) {
       console.error('Erreur envoi:', err);
@@ -2994,7 +3237,11 @@
       } else {
         console.warn("Config par défaut utilisée (Google injoignable ou code Apps Script à mettre à jour).");
       }
+      // Vérifier s'il y a un brouillon à restaurer (APRÈS le chargement de la config)
+      setTimeout(checkAndRestoreDraft, 200);
     })();
+  } else {
+    setTimeout(checkAndRestoreDraft, 200);
   }
 </script>
 
