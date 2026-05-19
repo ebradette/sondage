@@ -772,6 +772,48 @@
     border-bottom: 1px dashed var(--border);
   }
 
+  .editor-row-emp {
+    display: grid;
+    grid-template-columns: 50px 1fr 40px;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .editor-emp-fields {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 8px;
+  }
+
+  .editor-emp-name,
+  .editor-emp-email {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 14px;
+    font-size: 14px;
+    border-radius: 3px;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .editor-emp-name:focus,
+  .editor-emp-email:focus { border-color: var(--gold); }
+
+  .editor-emp-email {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .editor-emp-email:focus {
+    color: var(--text);
+  }
+
+  @media (max-width: 600px) {
+    .editor-emp-fields { grid-template-columns: 1fr; gap: 6px; }
+  }
+
   .editor-row-cat:last-of-type {
     border-bottom: none;
   }
@@ -927,6 +969,103 @@
     gap: 12px;
     align-items: center;
     margin-bottom: 8px;
+  }
+
+  /* Sélecteur Mode de validation */
+  .validation-mode-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .validation-mode-option {
+    display: flex;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    align-items: flex-start;
+  }
+
+  .validation-mode-option:hover {
+    border-color: var(--gold-dark);
+    background: var(--bg-card-hover);
+  }
+
+  .validation-mode-option input[type="radio"] {
+    margin-top: 4px;
+    accent-color: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .validation-mode-option input[type="radio"]:checked ~ .validation-mode-content .validation-mode-title {
+    color: var(--gold);
+  }
+
+  .validation-mode-option:has(input:checked) {
+    border-color: var(--gold);
+    background: rgba(201, 169, 97, 0.05);
+  }
+
+  .validation-mode-content {
+    flex: 1;
+  }
+
+  .validation-mode-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .validation-mode-default {
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-style: italic;
+  }
+
+  .validation-mode-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    font-family: 'Inter', sans-serif;
+  }
+
+  /* Indicateurs de catégories incomplètes (visible pendant le sondage) */
+  .category.incomplete-warning {
+    border-left-color: var(--danger);
+    background: rgba(194, 84, 80, 0.04);
+  }
+
+  .category.incomplete-warning .cat-status {
+    color: var(--danger-light);
+    font-weight: 600;
+  }
+
+  .progress-completion {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: rgba(194, 84, 80, 0.08);
+    border: 1px solid var(--danger);
+    border-radius: 3px;
+    font-size: 11px;
+    color: var(--danger-light);
+    letter-spacing: 1px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .progress-completion.all-done {
+    background: rgba(111, 168, 111, 0.08);
+    border-color: var(--success);
+    color: var(--success);
   }
 
   .rank-points-label {
@@ -1468,6 +1607,7 @@
       <div class="progress-fill" id="progress-fill"></div>
     </div>
     <span class="progress-text"><strong id="progress-count">0</strong> / <span id="progress-total">75</span> votes</span>
+    <span class="progress-completion" id="progress-completion"><span id="categories-completed">0</span> / <span id="categories-total">25</span> catégories complètes</span>
   </div>
 
   <form id="poll-form">
@@ -1558,7 +1698,7 @@
     </div>
 
     <div class="admin-section" id="tab-employees">
-      <div class="admin-info">Liste des employés. Triée alphabétiquement à la sauvegarde.</div>
+      <div class="admin-info">Liste des employés (nom + courriel). Le courriel est optionnel — il servira pour des fonctionnalités futures (identification par courriel, modifications de vote, rappels). Triée alphabétiquement par nom à la sauvegarde.</div>
       <div id="employees-editor"></div>
       <button type="button" class="btn-add" onclick="addEmployeeRow()">+ Ajouter un employé</button>
     </div>
@@ -1568,6 +1708,29 @@
       <div class="config-field">
         <label>Choix par catégorie</label>
         <input type="number" id="setting-choices" min="1" max="10" value="3" class="url-input">
+      </div>
+
+      <div class="config-field">
+        <label>Mode de validation à la soumission</label>
+        <div class="admin-info" style="margin: 8px 0;">
+          Détermine ce qui est requis pour qu'un votant puisse soumettre son sondage.
+        </div>
+        <div class="validation-mode-group">
+          <label class="validation-mode-option">
+            <input type="radio" name="validation-mode" value="strict" id="validation-strict">
+            <div class="validation-mode-content">
+              <div class="validation-mode-title">🔒 Strict <span class="validation-mode-default">(recommandé)</span></div>
+              <div class="validation-mode-desc">Toutes les catégories doivent être complètement remplies (tous les choix requis). Impossible de soumettre si une catégorie est incomplète.</div>
+            </div>
+          </label>
+          <label class="validation-mode-option">
+            <input type="radio" name="validation-mode" value="permissive" id="validation-permissive">
+            <div class="validation-mode-content">
+              <div class="validation-mode-title">⚖ Permissif</div>
+              <div class="validation-mode-desc">Au moins 1 choix requis par catégorie, mais on tolère qu'une catégorie ne soit pas complètement remplie (1 ou 2 choix au lieu de 3).</div>
+            </div>
+          </label>
+        </div>
       </div>
 
       <div class="config-field">
@@ -1616,6 +1779,26 @@
     return cats.map(normalizeCategory).filter(c => c.name.length > 0);
   }
 
+  // Compatibilité : normalise un employé (string -> objet {name, email})
+  function normalizeEmployee(emp) {
+    if (typeof emp === 'string') return { name: emp, email: '' };
+    if (emp && typeof emp === 'object') {
+      return {
+        name: String(emp.name || emp.nom || ''),
+        email: String(emp.email || emp.courriel || '')
+      };
+    }
+    return { name: '', email: '' };
+  }
+
+  function getEmployeeName(emp) {
+    return normalizeEmployee(emp).name;
+  }
+
+  function getEmployeeNames() {
+    return employees.map(getEmployeeName).filter(n => n.length > 0);
+  }
+
   const DEFAULT_EMPLOYEES = [
     "Alex Arseneault","Alex Poirier","Alexandre Fortin","Alexandre Gagné","Alexandre Lessard",
     "Anthony Martel","Arnold Degni","Benoit Rivest","Bruno Boily","Camil Palin",
@@ -1646,6 +1829,8 @@
   let currentResults = null;
   // Pondération par rang : [points pour rang 1, points pour rang 2, ...]
   let rankPoints = [3, 2, 1];
+  // Mode de validation : 'strict' (tout doit être rempli) ou 'permissive' (au moins 1 choix par cat)
+  let validationMode = 'strict';
   const rankLabels = ['Choix 1', 'Choix 2', 'Choix 3', 'Choix 4', 'Choix 5', 'Choix 6', 'Choix 7', 'Choix 8', 'Choix 9', 'Choix 10'];
 
   // ============================================
@@ -1873,10 +2058,16 @@
       if (data.status === 'ok' && data.config) {
         const cfg = data.config;
         if (Array.isArray(cfg.categories) && cfg.categories.length) categories = normalizeCategories(cfg.categories);
-        if (Array.isArray(cfg.employees) && cfg.employees.length) employees = cfg.employees;
+        if (Array.isArray(cfg.employees) && cfg.employees.length) {
+          // Normaliser : convertir tout en objets {name, email}
+          employees = cfg.employees.map(normalizeEmployee).filter(e => e.name.length > 0);
+        }
         if (typeof cfg.choicesPerCategory === 'number') choicesPerCategory = cfg.choicesPerCategory;
         if (Array.isArray(cfg.rankPoints) && cfg.rankPoints.length) {
           rankPoints = cfg.rankPoints.map(p => parseInt(p) || 0);
+        }
+        if (cfg.validationMode === 'permissive' || cfg.validationMode === 'strict') {
+          validationMode = cfg.validationMode;
         }
         return true;
       }
@@ -1897,7 +2088,7 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           action: 'saveConfig',
-          config: { categories, employees, choicesPerCategory, rankPoints }
+          config: { categories, employees, choicesPerCategory, rankPoints, validationMode }
         })
       });
       return true;
@@ -1931,10 +2122,12 @@
     const previousValue = select.value; // Préserver la sélection actuelle
     select.innerHTML = '<option value="">— Sélectionnez votre nom dans la liste —</option>';
     employees.forEach(emp => {
+      const name = getEmployeeName(emp);
+      if (!name) return;
       const opt = document.createElement('option');
-      opt.value = emp;
-      opt.textContent = emp;
-      if (emp === previousValue) opt.selected = true;
+      opt.value = name;
+      opt.textContent = name;
+      if (name === previousValue) opt.selected = true;
       select.appendChild(opt);
     });
 
@@ -1986,8 +2179,10 @@
     // Récupérer le nom du votant pour l'exclure des choix
     const voterName = document.getElementById('voter-name').value || '';
 
-    // Liste des employés disponibles comme options (sans le votant)
-    const selectableEmployees = employees.filter(emp => emp !== voterName);
+    // Liste des noms d'employés disponibles comme options (sans le votant)
+    const selectableEmployees = employees
+      .map(getEmployeeName)
+      .filter(name => name.length > 0 && name !== voterName);
 
     categories.forEach((cat, idx) => {
       const catObj = normalizeCategory(cat);
@@ -2001,8 +2196,8 @@
       let selectionsHtml = '';
       for (let j = 1; j <= choicesPerCategory; j++) {
         let optionsHtml = '<option value="">— Choisir un employé —</option>';
-        selectableEmployees.forEach(emp => {
-          optionsHtml += `<option value="${escapeHtml(emp)}">${escapeHtml(emp)}</option>`;
+        selectableEmployees.forEach(name => {
+          optionsHtml += `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
         });
         const rankLabel = catObj.teamMode ? `Équipe ${j}` : (rankLabels[j-1] || `Choix ${j}`);
 
@@ -2252,10 +2447,15 @@
   function updateProgress() {
     let totalFilled = 0;
     let totalRequired = 0;
+    let categoriesCompleted = 0;
+    let categoriesTotal = categories.length;
 
     categories.forEach((cat, idx) => {
       const catObj = normalizeCategory(cat);
       const catNum = idx + 1;
+      const catEl = document.getElementById(`category-${catNum}`);
+      let catFilled = 0;
+      let catRequired = choicesPerCategory;
 
       if (catObj.teamMode) {
         // Mode équipe : 2 dropdowns par choix, mais on compte les ÉQUIPES COMPLÈTES
@@ -2267,20 +2467,48 @@
           groupedByChoice[choice].push(s);
         });
         Object.values(groupedByChoice).forEach(pair => {
-          if (pair.filter(s => s.value).length === 2) totalFilled++;
-          totalRequired++;
+          if (pair.filter(s => s.value).length === 2) catFilled++;
         });
       } else {
         // Mode normal : 1 dropdown par choix
         const selects = document.querySelectorAll(`select[data-cat="${catNum}"]`);
-        totalFilled += Array.from(selects).filter(s => s.value).length;
-        totalRequired += choicesPerCategory;
+        catFilled = Array.from(selects).filter(s => s.value).length;
+      }
+
+      totalFilled += catFilled;
+      totalRequired += catRequired;
+
+      if (catFilled === catRequired) {
+        categoriesCompleted++;
+        if (catEl) catEl.classList.remove('incomplete-warning');
+      } else {
+        // Surligner uniquement si on a commencé à remplir (au moins 1 choix dans le sondage)
+        // pour éviter de tout colorer en rouge au premier chargement
+        if (catEl && totalFilled > 0) {
+          catEl.classList.add('incomplete-warning');
+        }
       }
     });
 
     progressCount.textContent = totalFilled;
     document.getElementById('progress-total').textContent = totalRequired;
     progressFill.style.width = (totalRequired > 0 ? (totalFilled / totalRequired * 100) : 0) + '%';
+
+    // Mettre à jour le compteur de catégories complètes
+    const catCompletedEl = document.getElementById('categories-completed');
+    const catTotalEl = document.getElementById('categories-total');
+    const completionEl = document.getElementById('progress-completion');
+    if (catCompletedEl) catCompletedEl.textContent = categoriesCompleted;
+    if (catTotalEl) catTotalEl.textContent = categoriesTotal;
+    if (completionEl) {
+      if (categoriesCompleted === categoriesTotal && categoriesTotal > 0) {
+        completionEl.classList.add('all-done');
+        completionEl.innerHTML = `✓ Toutes les ${categoriesTotal} catégories sont complètes`;
+      } else {
+        completionEl.classList.remove('all-done');
+        completionEl.innerHTML = `<span id="categories-completed">${categoriesCompleted}</span> / <span id="categories-total">${categoriesTotal}</span> catégories complètes`;
+      }
+    }
   }
 
   // ============================================
@@ -2302,34 +2530,103 @@
       return;
     }
 
-    const incomplete = [];
+    // Analyser l'état de chaque catégorie
+    const partiallyFilled = []; // 1-2 choix sur 3
+    const totallyEmpty = []; // 0 choix
+    const incomplete = []; // toutes les catégories pas 100% complètes
+
     categories.forEach((cat, idx) => {
       const catObj = normalizeCategory(cat);
       const i = idx + 1;
 
+      let filledCount = 0;
+
       if (catObj.teamMode) {
         // Compter les équipes complètes (2 dropdowns remplis)
-        let teamsComplete = 0;
         for (let j = 1; j <= choicesPerCategory; j++) {
           const a = document.getElementById(`select-${i}-${j}-a`);
           const b = document.getElementById(`select-${i}-${j}-b`);
-          if (a && b && a.value && b.value) teamsComplete++;
+          if (a && b && a.value && b.value) filledCount++;
         }
-        if (teamsComplete < choicesPerCategory) incomplete.push(i);
       } else {
         const selects = document.querySelectorAll(`select[data-cat="${i}"]`);
-        const filled = Array.from(selects).filter(s => s.value).length;
-        if (filled < choicesPerCategory) incomplete.push(i);
+        filledCount = Array.from(selects).filter(s => s.value).length;
+      }
+
+      if (filledCount < choicesPerCategory) {
+        incomplete.push({ num: i, name: catObj.name, filled: filledCount });
+        if (filledCount === 0) {
+          totallyEmpty.push(i);
+        } else {
+          partiallyFilled.push(i);
+        }
       }
     });
 
-    if (incomplete.length > 0) {
-      const proceed = confirm(
-        `Attention : ${incomplete.length} catégorie(s) ne sont pas complètes (catégories : ${incomplete.join(', ')}).\n\nVoulez-vous tout de même soumettre vos votes ?`
-      );
-      if (!proceed) {
-        document.getElementById(`category-${incomplete[0]}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Appliquer la règle de validation
+    if (validationMode === 'strict') {
+      // STRICT : toutes les catégories doivent être 100% complètes
+      if (incomplete.length > 0) {
+        const list = incomplete.slice(0, 10)
+          .map(c => `• Catégorie ${c.num} (${c.name}) — ${c.filled} / ${choicesPerCategory} choix`)
+          .join('\n');
+        const more = incomplete.length > 10 ? `\n... et ${incomplete.length - 10} autre(s)` : '';
+
+        alert(
+          `❌ Impossible de soumettre — Sondage incomplet\n\n` +
+          `Le mode strict exige que toutes les catégories soient complètement remplies (${choicesPerCategory} choix par catégorie).\n\n` +
+          `Catégories incomplètes (${incomplete.length}) :\n${list}${more}\n\n` +
+          `Veuillez compléter toutes les catégories avant de soumettre.`
+        );
+
+        // Scroller vers la première catégorie incomplète
+        const firstIncomplete = document.getElementById(`category-${incomplete[0].num}`);
+        if (firstIncomplete) {
+          firstIncomplete.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstIncomplete.classList.add('incomplete-warning');
+        }
         return;
+      }
+    } else {
+      // PERMISSIF : au moins 1 choix par catégorie obligatoire
+      if (totallyEmpty.length > 0) {
+        const catNames = totallyEmpty.slice(0, 10)
+          .map(num => {
+            const cat = normalizeCategory(categories[num - 1]);
+            return `• Catégorie ${num} (${cat.name})`;
+          })
+          .join('\n');
+        const more = totallyEmpty.length > 10 ? `\n... et ${totallyEmpty.length - 10} autre(s)` : '';
+
+        alert(
+          `❌ Impossible de soumettre — Catégories vides\n\n` +
+          `Le mode permissif exige au moins 1 choix par catégorie.\n\n` +
+          `Catégories totalement vides (${totallyEmpty.length}) :\n${catNames}${more}\n\n` +
+          `Veuillez ajouter au moins 1 choix par catégorie.`
+        );
+
+        const firstEmpty = document.getElementById(`category-${totallyEmpty[0]}`);
+        if (firstEmpty) {
+          firstEmpty.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          firstEmpty.classList.add('incomplete-warning');
+        }
+        return;
+      }
+
+      // Avertir si des catégories sont partiellement remplies (mais OK)
+      if (partiallyFilled.length > 0) {
+        const proceed = confirm(
+          `⚠ Attention : Sondage partiellement complet\n\n` +
+          `${partiallyFilled.length} catégorie(s) ont moins de ${choicesPerCategory} choix sur ${choicesPerCategory} : ${partiallyFilled.join(', ')}\n\n` +
+          `Voulez-vous tout de même soumettre, ou compléter d'abord?\n\n` +
+          `OK = Soumettre quand même\n` +
+          `Annuler = Retourner compléter`
+        );
+        if (!proceed) {
+          const firstPartial = document.getElementById(`category-${partiallyFilled[0]}`);
+          if (firstPartial) firstPartial.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          return;
+        }
       }
     }
 
@@ -2496,6 +2793,10 @@
   function renderAdminEditors() {
     document.getElementById('config-url').value = scriptUrl;
     document.getElementById('setting-choices').value = choicesPerCategory;
+    // Cocher la bonne option de validation
+    const radioId = validationMode === 'permissive' ? 'validation-permissive' : 'validation-strict';
+    const radio = document.getElementById(radioId);
+    if (radio) radio.checked = true;
     renderCategoriesEditor();
     renderEmployeesEditor();
     renderRankPointsEditor();
@@ -2536,8 +2837,27 @@
     const editor = document.getElementById('employees-editor');
     editor.innerHTML = '';
     employees.forEach((emp, idx) => {
-      editor.appendChild(createEditorRow(idx + 1, emp, 'emp', idx));
+      editor.appendChild(createEmployeeEditorRow(idx + 1, normalizeEmployee(emp), idx));
     });
+  }
+
+  function createEmployeeEditorRow(num, empObj, idx) {
+    const row = document.createElement('div');
+    row.className = 'editor-row-emp';
+    row.innerHTML = `
+      <div class="row-num">${num}</div>
+      <div class="editor-emp-fields">
+        <input type="text" class="editor-emp-name" value="${escapeHtml(empObj.name)}" data-type="emp-name" data-idx="${idx}" placeholder="Nom de l'employé">
+        <input type="email" class="editor-emp-email" value="${escapeHtml(empObj.email)}" data-type="emp-email" data-idx="${idx}" placeholder="courriel@exemple.com (optionnel)">
+      </div>
+      <button type="button" class="btn-remove" title="Supprimer">×</button>
+    `;
+    row.querySelector('.btn-remove').addEventListener('click', () => {
+      captureEditorValues();
+      employees.splice(idx, 1);
+      renderEmployeesEditor();
+    });
+    return row;
   }
 
   function createCategoryEditorRow(num, catObj, idx) {
@@ -2598,24 +2918,6 @@
     return row;
   }
 
-  function createEditorRow(num, value, type, idx) {
-    const row = document.createElement('div');
-    row.className = 'editor-row';
-    row.innerHTML = `
-      <div class="row-num">${num}</div>
-      <input type="text" value="${escapeHtml(value)}" data-type="${type}" data-idx="${idx}" placeholder="${type === 'cat' ? 'Nom de la catégorie' : 'Nom de l\'employé'}">
-      <button type="button" class="btn-remove" title="Supprimer">×</button>
-    `;
-    row.querySelector('.btn-remove').addEventListener('click', () => {
-      captureEditorValues();
-      if (type === 'emp') {
-        employees.splice(idx, 1);
-        renderEmployeesEditor();
-      }
-    });
-    return row;
-  }
-
   function addCategoryRow() {
     captureEditorValues();
     categories.push({ name: `Catégorie ${categories.length + 1}`, description: '' });
@@ -2624,9 +2926,9 @@
 
   function addEmployeeRow() {
     captureEditorValues();
-    employees.push('');
+    employees.push({ name: '', email: '' });
     renderEmployeesEditor();
-    const inputs = document.querySelectorAll('#employees-editor input');
+    const inputs = document.querySelectorAll('#employees-editor .editor-emp-name');
     if (inputs.length) inputs[inputs.length - 1].focus();
   }
 
@@ -2666,10 +2968,25 @@
         categories[idx].teamMode = cb.checked;
       }
     });
-    // Employés
-    document.querySelectorAll('#employees-editor input').forEach(input => {
+    // Employés : nom
+    document.querySelectorAll('#employees-editor [data-type="emp-name"]').forEach(input => {
       const idx = parseInt(input.dataset.idx);
-      if (!isNaN(idx)) employees[idx] = input.value;
+      if (!isNaN(idx)) {
+        if (typeof employees[idx] === 'string' || !employees[idx]) {
+          employees[idx] = normalizeEmployee(employees[idx]);
+        }
+        employees[idx].name = input.value;
+      }
+    });
+    // Employés : email
+    document.querySelectorAll('#employees-editor [data-type="emp-email"]').forEach(input => {
+      const idx = parseInt(input.dataset.idx);
+      if (!isNaN(idx)) {
+        if (typeof employees[idx] === 'string' || !employees[idx]) {
+          employees[idx] = normalizeEmployee(employees[idx]);
+        }
+        employees[idx].email = input.value;
+      }
     });
   }
 
@@ -2683,9 +3000,27 @@
       .map(c => normalizeCategory(c))
       .map(c => ({ name: c.name.trim(), description: c.description, teamMode: c.teamMode === true }))
       .filter(c => c.name.length > 0);
-    employees = employees.map(e => e.trim()).filter(e => e.length > 0);
-    employees.sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
-    const uniqueEmps = [...new Set(employees)];
+    // Nettoyer les employés (objets)
+    employees = employees
+      .map(e => normalizeEmployee(e))
+      .map(e => ({
+        name: e.name.trim(),
+        email: e.email.trim().toLowerCase()
+      }))
+      .filter(e => e.name.length > 0);
+
+    employees.sort((a, b) => a.name.localeCompare(b.name, 'fr', { sensitivity: 'base' }));
+
+    // Détecter les doublons (par nom, insensible à la casse)
+    const seenNames = new Set();
+    const uniqueEmps = [];
+    employees.forEach(e => {
+      const key = e.name.toLowerCase();
+      if (!seenNames.has(key)) {
+        seenNames.add(key);
+        uniqueEmps.push(e);
+      }
+    });
     if (uniqueEmps.length !== employees.length) {
       alert(`${employees.length - uniqueEmps.length} doublon(s) supprimé(s).`);
       employees = uniqueEmps;
@@ -2694,6 +3029,15 @@
     const choicesInput = parseInt(document.getElementById('setting-choices').value);
     if (!isNaN(choicesInput) && choicesInput >= 1 && choicesInput <= 10) {
       choicesPerCategory = choicesInput;
+    }
+
+    // Capturer le mode de validation
+    const strictRadio = document.getElementById('validation-strict');
+    const permissiveRadio = document.getElementById('validation-permissive');
+    if (permissiveRadio && permissiveRadio.checked) {
+      validationMode = 'permissive';
+    } else {
+      validationMode = 'strict';
     }
 
     // Capturer les pondérations par rang
@@ -2762,6 +3106,7 @@
     employees = [...DEFAULT_EMPLOYEES];
     choicesPerCategory = 3;
     rankPoints = [3, 2, 1];
+    validationMode = 'strict';
 
     // Sauvegarder sur Google
     let success = false;
@@ -2918,7 +3263,7 @@
     const statsEl = document.getElementById('results-stats');
     const contentEl = document.getElementById('results-content');
 
-    const totalVoters = employees.length;
+    const totalVoters = getEmployeeNames().length;
     const votedCount = (data.voters || []).length;
     const participationRate = totalVoters > 0 ? Math.round((votedCount / totalVoters) * 100) : 0;
     const totalVotes = data.totalVotes || 0;
@@ -3090,14 +3435,15 @@
     const contentEl = document.getElementById('voters-content');
     const voters = data.voters || [];
     const votedNames = new Set(voters.map(v => v.name));
-    const notVoted = employees.filter(e => !votedNames.has(e));
+    const allEmployeeNames = getEmployeeNames();
+    const notVoted = allEmployeeNames.filter(name => !votedNames.has(name));
     const sortedVoters = [...voters].sort((a, b) => new Date(b.date) - new Date(a.date));
 
     let html = `
       <div class="voters-grid">
         <div class="voters-column voted">
           <h3>✓ Ont voté</h3>
-          <div class="count">${voters.length} / ${employees.length}</div>
+          <div class="count">${voters.length} / ${allEmployeeNames.length}</div>
           <ul class="voters-list">
             ${sortedVoters.map(v => `
               <li>
@@ -3109,7 +3455,7 @@
         </div>
         <div class="voters-column not-voted">
           <h3>○ N'ont pas voté</h3>
-          <div class="count">${notVoted.length} / ${employees.length}</div>
+          <div class="count">${notVoted.length} / ${allEmployeeNames.length}</div>
           <ul class="voters-list">
             ${notVoted.map(name => `<li><span>${escapeHtml(name)}</span></li>`).join('')}
           </ul>
