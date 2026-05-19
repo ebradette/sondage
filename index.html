@@ -1037,6 +1037,139 @@
     font-family: 'Inter', sans-serif;
   }
 
+  /* Onglet Rappels */
+  .reminder-section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--gold);
+    margin-top: 24px;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .reminder-help {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-family: 'Inter', sans-serif;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .reminder-help code {
+    background: rgba(201, 169, 97, 0.1);
+    color: var(--gold);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-style: normal;
+    font-size: 11px;
+    margin: 0 2px;
+  }
+
+  .reminder-templates,
+  .reminder-actions,
+  .reminder-auto {
+    margin-top: 24px;
+  }
+
+  .email-template-block {
+    margin: 16px 0;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .email-template-block label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .email-template-block input {
+    margin-bottom: 10px;
+  }
+
+  .email-template-textarea {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    border-radius: 3px;
+    outline: none;
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  .email-template-textarea:focus { border-color: var(--gold); }
+
+  .reminder-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+  }
+
+  .reminder-buttons .submit-btn {
+    flex: 1;
+    min-width: 200px;
+    padding: 14px 20px;
+    font-size: 11px;
+  }
+
+  .trigger-status {
+    padding: 12px 16px;
+    background: var(--bg);
+    border-radius: 3px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+  }
+
+  .trigger-status.installed {
+    background: rgba(111, 168, 111, 0.08);
+    border-left: 2px solid var(--success);
+    color: var(--success);
+  }
+
+  .trigger-status.not-installed {
+    background: rgba(194, 84, 80, 0.08);
+    border-left: 2px solid var(--danger);
+    color: var(--danger-light);
+  }
+
+  .reminder-logs {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .reminder-log-entry {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto auto;
+    gap: 12px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .reminder-log-entry:last-child { border-bottom: none; }
+  .reminder-log-date { color: var(--text-muted); }
+  .reminder-log-type { color: var(--gold); font-weight: 500; }
+  .reminder-log-sent { color: var(--success); }
+  .reminder-log-failed { color: var(--danger-light); }
+
   /* Indicateurs de catégories incomplètes (visible pendant le sondage) */
   .category.incomplete-warning {
     border-left-color: var(--danger);
@@ -1445,8 +1578,28 @@
     gap: 20px;
   }
 
+  .voters-grid-3col {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  @media (max-width: 900px) {
+    .voters-grid-3col { grid-template-columns: 1fr; }
+  }
+
   @media (max-width: 700px) {
     .voters-grid { grid-template-columns: 1fr; }
+  }
+
+  .voters-info-banner {
+    background: rgba(201, 169, 97, 0.06);
+    border-left: 2px solid var(--gold-dark);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 16px;
+    border-radius: 0 3px 3px 0;
   }
 
   .voters-column {
@@ -1465,6 +1618,7 @@
 
   .voters-column.voted h3 { color: var(--success); }
   .voters-column.not-voted h3 { color: var(--danger-light); }
+  .voters-column.incomplete h3 { color: #e0a000; }
 
   .voters-column .count {
     font-size: 11px;
@@ -1498,6 +1652,19 @@
 
   .voters-column.voted .voters-list li::before { background: var(--success); }
   .voters-column.not-voted .voters-list li::before { background: var(--danger); }
+  .voters-column.incomplete .voters-list li::before { background: #e0a000; }
+
+  .voters-list .incomplete-count {
+    margin-left: auto;
+    font-size: 10px;
+    color: #e0a000;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    background: rgba(224, 160, 0, 0.1);
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+  }
 
   .voters-list:empty::after {
     content: 'Aucun';
@@ -1656,6 +1823,7 @@
       <button class="admin-tab" data-tab="connection">Connexion</button>
       <button class="admin-tab" data-tab="categories">Catégories</button>
       <button class="admin-tab" data-tab="employees">Employés</button>
+      <button class="admin-tab" data-tab="reminders">📧 Rappels</button>
       <button class="admin-tab" data-tab="settings">Param.</button>
     </div>
 
@@ -1701,6 +1869,74 @@
       <div class="admin-info">Liste des employés (nom + courriel). Le courriel est optionnel — il servira pour des fonctionnalités futures (identification par courriel, modifications de vote, rappels). Triée alphabétiquement par nom à la sauvegarde.</div>
       <div id="employees-editor"></div>
       <button type="button" class="btn-add" onclick="addEmployeeRow()">+ Ajouter un employé</button>
+    </div>
+
+    <div class="admin-section" id="tab-reminders">
+      <div class="admin-info">
+        Envoyez des courriels de rappel aux personnes qui n'ont pas voté ou qui ont un sondage incomplet.<br>
+        ⚠️ Les courriels doivent être saisis dans l'onglet <strong>Employés</strong>.
+      </div>
+
+      <div class="config-field">
+        <label>📅 Date du gala</label>
+        <input type="date" id="setting-gala-date" class="url-input">
+        <div class="reminder-help">Utilisée pour les rappels automatiques (J-15, J-10, J-5, J-2).</div>
+      </div>
+
+      <div class="config-field">
+        <label>🔗 URL du sondage (pour les courriels)</label>
+        <input type="url" id="setting-survey-url" class="url-input" placeholder="https://ebradette.github.io/sondage/">
+        <div class="reminder-help">Cette URL sera insérée dans les courriels via le token <code>{url}</code>.</div>
+      </div>
+
+      <div class="reminder-templates">
+        <h4 class="reminder-section-title">📨 Modèles de courriel</h4>
+        <div class="reminder-help">
+          Tokens disponibles : <code>{nom}</code>, <code>{votes}</code>, <code>{total}</code>, <code>{url}</code>
+        </div>
+
+        <div class="email-template-block">
+          <label>Modèle « Non-votants »</label>
+          <input type="text" id="tpl-notvoted-subject" class="url-input" placeholder="Sujet">
+          <textarea id="tpl-notvoted-body" class="email-template-textarea" rows="10" placeholder="Corps du message"></textarea>
+        </div>
+
+        <div class="email-template-block">
+          <label>Modèle « Incomplets »</label>
+          <input type="text" id="tpl-incomplete-subject" class="url-input" placeholder="Sujet">
+          <textarea id="tpl-incomplete-body" class="email-template-textarea" rows="10" placeholder="Corps du message"></textarea>
+        </div>
+      </div>
+
+      <div class="reminder-actions">
+        <h4 class="reminder-section-title">🚀 Envoi manuel</h4>
+        <div class="reminder-buttons">
+          <button type="button" class="submit-btn secondary" onclick="previewReminder('notVoted')">👁 Aperçu non-votants</button>
+          <button type="button" class="submit-btn" onclick="sendReminderNow('notVoted')" style="border-color: var(--danger); color: var(--danger-light);">📧 Envoyer aux non-votants</button>
+        </div>
+        <div class="reminder-buttons">
+          <button type="button" class="submit-btn secondary" onclick="previewReminder('incomplete')">👁 Aperçu incomplets</button>
+          <button type="button" class="submit-btn" onclick="sendReminderNow('incomplete')" style="border-color: #e0a000; color: #e0a000;">📧 Envoyer aux incomplets</button>
+        </div>
+        <div class="reminder-buttons">
+          <button type="button" class="submit-btn" onclick="sendReminderNow('both')">📧 Envoyer à TOUS (non-votants + incomplets)</button>
+        </div>
+      </div>
+
+      <div class="reminder-auto">
+        <h4 class="reminder-section-title">⏰ Rappels automatiques (J-15, J-10, J-5, J-2)</h4>
+        <div class="reminder-help">
+          Un script s'exécute chaque matin à 9h. Si on est à J-15, J-10, J-5 ou J-2 du gala, il envoie automatiquement les rappels aux non-votants ET aux incomplets.
+        </div>
+        <div id="trigger-status" class="trigger-status">Vérification de l'état...</div>
+        <div class="reminder-buttons">
+          <button type="button" class="submit-btn secondary" onclick="checkTriggerStatus()">↻ Actualiser</button>
+          <button type="button" class="submit-btn" id="install-trigger-btn" onclick="installTrigger()">✓ Activer les rappels auto</button>
+          <button type="button" class="submit-btn secondary" id="remove-trigger-btn" onclick="removeTrigger()" style="display:none;">✕ Désactiver les rappels auto</button>
+        </div>
+      </div>
+
+      <div class="reminder-logs" id="reminder-logs"></div>
     </div>
 
     <div class="admin-section" id="tab-settings">
@@ -1799,6 +2035,33 @@
     return employees.map(getEmployeeName).filter(n => n.length > 0);
   }
 
+  function getDefaultEmailTemplates() {
+    return {
+      notVoted: {
+        subject: 'Sondage Gala BGM 40e — Tes votes attendent!',
+        body: 'Bonjour {nom},\n\n' +
+              'Le sondage de nomination pour le Gala du 40e anniversaire BGM est en cours, et tu n\'as pas encore soumis tes votes.\n\n' +
+              'Pour participer, clique sur le lien suivant et fais tes choix dans chaque catégorie :\n\n' +
+              '{url}\n\n' +
+              'Le sondage prend environ 10 minutes à compléter. Tes votes sont importants pour célébrer les 40 ans de BGM!\n\n' +
+              'Merci de participer.\n\n' +
+              '— L\'organisation du 40e anniversaire BGM\n' +
+              '1986 ✦ 2026'
+      },
+      incomplete: {
+        subject: 'Sondage Gala BGM 40e — Termine ton vote!',
+        body: 'Bonjour {nom},\n\n' +
+              'Tu as commencé le sondage de nomination pour le Gala BGM 40e, mais il te reste des choix à compléter.\n\n' +
+              'Tu as actuellement {votes} / {total} votes enregistrés.\n\n' +
+              'Pour terminer, clique sur le lien suivant :\n\n' +
+              '{url}\n\n' +
+              'Ta participation complète est importante pour assurer la justesse des nominations!\n\n' +
+              '— L\'organisation du 40e anniversaire BGM\n' +
+              '1986 ✦ 2026'
+      }
+    };
+  }
+
   const DEFAULT_EMPLOYEES = [
     "Alex Arseneault","Alex Poirier","Alexandre Fortin","Alexandre Gagné","Alexandre Lessard",
     "Anthony Martel","Arnold Degni","Benoit Rivest","Bruno Boily","Camil Palin",
@@ -1820,7 +2083,7 @@
   const STORAGE_KEY = "galaPollConfig_v5";
   const DRAFT_KEY = "galaPollDraft_v1";
   const DRAFT_EXPIRY_DAYS = 30;
-  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_HkauR95GWldW9w1Uv3mzDXVqpIHy5Udg8OK21z1yGNVklsHf5B1P2QzVgvorQ_pI5Q/exec";
+  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbu927is7CTdGtR09THleBh_Re-MlzduD4ed2Q1WBvBu-ybhI9cbzbeQOdTiQlTxSFog/exec";
 
   let categories = [...DEFAULT_CATEGORIES];
   let employees = [...DEFAULT_EMPLOYEES];
@@ -1831,6 +2094,12 @@
   let rankPoints = [3, 2, 1];
   // Mode de validation : 'strict' (tout doit être rempli) ou 'permissive' (au moins 1 choix par cat)
   let validationMode = 'strict';
+  // Date du gala (pour les rappels automatiques)
+  let galaDate = '';
+  // URL du sondage (pour l'inclure dans les courriels de rappel)
+  let surveyUrl = '';
+  // Modèles d'emails de rappel
+  let emailTemplates = getDefaultEmailTemplates();
   const rankLabels = ['Choix 1', 'Choix 2', 'Choix 3', 'Choix 4', 'Choix 5', 'Choix 6', 'Choix 7', 'Choix 8', 'Choix 9', 'Choix 10'];
 
   // ============================================
@@ -2069,6 +2338,21 @@
         if (cfg.validationMode === 'permissive' || cfg.validationMode === 'strict') {
           validationMode = cfg.validationMode;
         }
+        if (typeof cfg.galaDate === 'string') galaDate = cfg.galaDate;
+        if (typeof cfg.surveyUrl === 'string') surveyUrl = cfg.surveyUrl;
+        if (cfg.emailTemplates && typeof cfg.emailTemplates === 'object') {
+          const defaults = getDefaultEmailTemplates();
+          emailTemplates = {
+            notVoted: {
+              subject: (cfg.emailTemplates.notVoted && cfg.emailTemplates.notVoted.subject) || defaults.notVoted.subject,
+              body: (cfg.emailTemplates.notVoted && cfg.emailTemplates.notVoted.body) || defaults.notVoted.body
+            },
+            incomplete: {
+              subject: (cfg.emailTemplates.incomplete && cfg.emailTemplates.incomplete.subject) || defaults.incomplete.subject,
+              body: (cfg.emailTemplates.incomplete && cfg.emailTemplates.incomplete.body) || defaults.incomplete.body
+            }
+          };
+        }
         return true;
       }
       return false;
@@ -2088,7 +2372,7 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           action: 'saveConfig',
-          config: { categories, employees, choicesPerCategory, rankPoints, validationMode }
+          config: { categories, employees, choicesPerCategory, rankPoints, validationMode, galaDate, surveyUrl, emailTemplates }
         })
       });
       return true;
@@ -2800,6 +3084,33 @@
     renderCategoriesEditor();
     renderEmployeesEditor();
     renderRankPointsEditor();
+    renderRemindersTab();
+  }
+
+  function renderRemindersTab() {
+    // Date du gala
+    const dateEl = document.getElementById('setting-gala-date');
+    if (dateEl) dateEl.value = galaDate || '';
+
+    // URL du sondage
+    const urlEl = document.getElementById('setting-survey-url');
+    if (urlEl) {
+      // Si pas encore configuré, suggérer l'URL actuelle de la page
+      urlEl.value = surveyUrl || window.location.href.split('?')[0].split('#')[0];
+    }
+
+    // Modèles d'emails
+    const tplNS = document.getElementById('tpl-notvoted-subject');
+    const tplNB = document.getElementById('tpl-notvoted-body');
+    const tplIS = document.getElementById('tpl-incomplete-subject');
+    const tplIB = document.getElementById('tpl-incomplete-body');
+    if (tplNS) tplNS.value = emailTemplates.notVoted.subject;
+    if (tplNB) tplNB.value = emailTemplates.notVoted.body;
+    if (tplIS) tplIS.value = emailTemplates.incomplete.subject;
+    if (tplIB) tplIB.value = emailTemplates.incomplete.body;
+
+    // Vérifier l'état du trigger
+    checkTriggerStatus();
   }
 
   function renderRankPointsEditor() {
@@ -3038,6 +3349,30 @@
       validationMode = 'permissive';
     } else {
       validationMode = 'strict';
+    }
+
+    // Capturer les paramètres de rappels
+    const galaDateEl = document.getElementById('setting-gala-date');
+    if (galaDateEl) galaDate = galaDateEl.value.trim();
+    const surveyUrlEl = document.getElementById('setting-survey-url');
+    if (surveyUrlEl) surveyUrl = surveyUrlEl.value.trim();
+
+    // Modèles d'emails
+    const tplNS = document.getElementById('tpl-notvoted-subject');
+    const tplNB = document.getElementById('tpl-notvoted-body');
+    const tplIS = document.getElementById('tpl-incomplete-subject');
+    const tplIB = document.getElementById('tpl-incomplete-body');
+    if (tplNS && tplNB) {
+      emailTemplates.notVoted = {
+        subject: tplNS.value.trim() || emailTemplates.notVoted.subject,
+        body: tplNB.value || emailTemplates.notVoted.body
+      };
+    }
+    if (tplIS && tplIB) {
+      emailTemplates.incomplete = {
+        subject: tplIS.value.trim() || emailTemplates.incomplete.subject,
+        body: tplIB.value || emailTemplates.incomplete.body
+      };
     }
 
     // Capturer les pondérations par rang
@@ -3434,34 +3769,111 @@
   function renderVoters(data) {
     const contentEl = document.getElementById('voters-content');
     const voters = data.voters || [];
+    const votersDetail = data.votersDetail || {};
     const votedNames = new Set(voters.map(v => v.name));
     const allEmployeeNames = getEmployeeNames();
     const notVoted = allEmployeeNames.filter(name => !votedNames.has(name));
-    const sortedVoters = [...voters].sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    let html = `
-      <div class="voters-grid">
-        <div class="voters-column voted">
-          <h3>✓ Ont voté</h3>
-          <div class="count">${voters.length} / ${allEmployeeNames.length}</div>
-          <ul class="voters-list">
-            ${sortedVoters.map(v => `
-              <li>
-                <span>${escapeHtml(v.name)}</span>
-                <span class="timestamp">${formatDate(v.date)}</span>
-              </li>
-            `).join('')}
-          </ul>
+    // Calculer le nombre total de votes attendus
+    let expectedVotesPerVoter = 0;
+    categories.forEach(cat => {
+      const catObj = normalizeCategory(cat);
+      if (catObj.teamMode) {
+        // Mode équipe : 1 vote par "équipe" (paire) × choices, donc choicesPerCategory votes par cat
+        expectedVotesPerVoter += choicesPerCategory;
+      } else {
+        expectedVotesPerVoter += choicesPerCategory;
+      }
+    });
+
+    // Séparer les votants en complets vs incomplets
+    const sortedVoters = [...voters].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const completeVoters = [];
+    const incompleteVoters = [];
+
+    sortedVoters.forEach(v => {
+      const count = votersDetail[v.name] || 0;
+      if (count >= expectedVotesPerVoter) {
+        completeVoters.push({ ...v, count });
+      } else {
+        incompleteVoters.push({ ...v, count });
+      }
+    });
+
+    // Si pas de votersDetail (Apps Script v7 ou avant), tout va en "complets"
+    const hasDetail = Object.keys(votersDetail).length > 0;
+
+    let html;
+
+    if (hasDetail) {
+      // 3 colonnes : Complets / Incomplets / Pas voté
+      html = `
+        <div class="voters-info-banner">
+          📊 Sondage complet = ${expectedVotesPerVoter} votes (${categories.length} catégories × ${choicesPerCategory} choix)
         </div>
-        <div class="voters-column not-voted">
-          <h3>○ N'ont pas voté</h3>
-          <div class="count">${notVoted.length} / ${allEmployeeNames.length}</div>
-          <ul class="voters-list">
-            ${notVoted.map(name => `<li><span>${escapeHtml(name)}</span></li>`).join('')}
-          </ul>
+        <div class="voters-grid voters-grid-3col">
+          <div class="voters-column voted">
+            <h3>✓ Complets</h3>
+            <div class="count">${completeVoters.length} / ${allEmployeeNames.length}</div>
+            <ul class="voters-list">
+              ${completeVoters.map(v => `
+                <li>
+                  <span>${escapeHtml(v.name)}</span>
+                  <span class="timestamp">${formatDate(v.date)}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          <div class="voters-column incomplete">
+            <h3>⚠ Incomplets</h3>
+            <div class="count">${incompleteVoters.length} / ${allEmployeeNames.length}</div>
+            <ul class="voters-list">
+              ${incompleteVoters.map(v => `
+                <li>
+                  <span>${escapeHtml(v.name)}</span>
+                  <span class="incomplete-count">${v.count} / ${expectedVotesPerVoter}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          <div class="voters-column not-voted">
+            <h3>○ N'ont pas voté</h3>
+            <div class="count">${notVoted.length} / ${allEmployeeNames.length}</div>
+            <ul class="voters-list">
+              ${notVoted.map(name => `<li><span>${escapeHtml(name)}</span></li>`).join('')}
+            </ul>
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    } else {
+      // Fallback : Apps Script ancien, 2 colonnes comme avant + warning
+      html = `
+        <div class="voters-info-banner" style="background: rgba(194, 84, 80, 0.1); border-left-color: var(--danger);">
+          ⚠️ Pour voir les votes incomplets, mettez à jour le code Apps Script vers v8.
+        </div>
+        <div class="voters-grid">
+          <div class="voters-column voted">
+            <h3>✓ Ont voté</h3>
+            <div class="count">${voters.length} / ${allEmployeeNames.length}</div>
+            <ul class="voters-list">
+              ${sortedVoters.map(v => `
+                <li>
+                  <span>${escapeHtml(v.name)}</span>
+                  <span class="timestamp">${formatDate(v.date)}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+          <div class="voters-column not-voted">
+            <h3>○ N'ont pas voté</h3>
+            <div class="count">${notVoted.length} / ${allEmployeeNames.length}</div>
+            <ul class="voters-list">
+              ${notVoted.map(name => `<li><span>${escapeHtml(name)}</span></li>`).join('')}
+            </ul>
+          </div>
+        </div>
+      `;
+    }
 
     contentEl.innerHTML = html;
   }
@@ -3565,6 +3977,227 @@
     a.download = `nominations_gala_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  // ============================================
+  // RAPPELS PAR COURRIEL
+  // ============================================
+  async function previewReminder(type) {
+    if (!scriptUrl) {
+      alert("URL Apps Script non configurée.");
+      return;
+    }
+
+    // Sauvegarder d'abord la config (pour que le serveur ait les bons templates et URL)
+    await saveConfigToServer();
+    await new Promise(r => setTimeout(r, 600));
+
+    try {
+      const response = await fetch(scriptUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'sendReminders',
+          reminderType: type,
+          testMode: true
+        })
+      });
+
+      // Mode no-cors → on ne peut pas lire la réponse, on fait juste un récap local
+      const allEmployeeNames = getEmployeeNames();
+      const employeesWithEmail = employees.filter(e => {
+        const obj = normalizeEmployee(e);
+        return obj.email && obj.email.includes('@');
+      });
+
+      alert(
+        `📧 Aperçu de l'envoi (${type === 'notVoted' ? 'Non-votants' : type === 'incomplete' ? 'Incomplets' : 'Tous'}) :\n\n` +
+        `• ${employeesWithEmail.length} employés ont un courriel configuré sur ${allEmployeeNames.length}\n` +
+        `• Le serveur va envoyer aux personnes qui correspondent au critère\n\n` +
+        `Pour envoyer pour de vrai, cliquez sur « Envoyer ».`
+      );
+    } catch (err) {
+      alert("Erreur lors de l'aperçu : " + err.message);
+    }
+  }
+
+  async function sendReminderNow(type) {
+    if (!scriptUrl) {
+      alert("URL Apps Script non configurée.");
+      return;
+    }
+
+    const typeLabel = type === 'notVoted' ? 'NON-VOTANTS' :
+                      type === 'incomplete' ? 'INCOMPLETS' : 'TOUS (non-votants + incomplets)';
+
+    if (!confirm(`⚠️ Envoyer un rappel par courriel aux ${typeLabel}?\n\nUn courriel sera envoyé à chaque personne concernée qui a une adresse courriel saisie dans l'onglet Employés.\n\nContinuer?`)) return;
+
+    // Sauvegarder d'abord la config pour que le serveur ait les bons templates
+    const saveTrigger = document.getElementById('admin-trigger');
+    const originalText = saveTrigger.textContent;
+    saveTrigger.textContent = '⏳ Sauvegarde...';
+
+    await saveConfigToServer();
+    await new Promise(r => setTimeout(r, 800));
+
+    saveTrigger.textContent = '⏳ Envoi des courriels...';
+
+    try {
+      await fetch(scriptUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'sendReminders',
+          reminderType: type,
+          testMode: false
+        })
+      });
+
+      // Attendre un peu puis recharger le statut
+      await new Promise(r => setTimeout(r, 2000));
+      await checkTriggerStatus();
+
+      saveTrigger.textContent = '✓ Envoyé';
+      setTimeout(() => { saveTrigger.textContent = originalText; }, 2500);
+
+      alert(
+        `✓ Demande d'envoi traitée!\n\n` +
+        `Les courriels sont en cours d'envoi par Google. Consultez la section "Derniers envois" plus bas pour voir le résultat.\n\n` +
+        `Note : avec un compte Google gratuit, la limite est de 100 courriels/jour.`
+      );
+    } catch (err) {
+      saveTrigger.textContent = '⚠ Erreur';
+      setTimeout(() => { saveTrigger.textContent = originalText; }, 2500);
+      alert("Erreur lors de l'envoi : " + err.message);
+    }
+  }
+
+  async function checkTriggerStatus() {
+    const statusEl = document.getElementById('trigger-status');
+    const installBtn = document.getElementById('install-trigger-btn');
+    const removeBtn = document.getElementById('remove-trigger-btn');
+
+    if (!scriptUrl) {
+      statusEl.className = 'trigger-status';
+      statusEl.textContent = '⚠ URL Apps Script non configurée.';
+      return;
+    }
+
+    statusEl.className = 'trigger-status';
+    statusEl.textContent = '⏳ Vérification...';
+
+    try {
+      const data = await jsonp(scriptUrl, { action: 'reminderStatus' }, 12000);
+
+      if (data.status === 'ok') {
+        if (data.triggerInstalled) {
+          statusEl.className = 'trigger-status installed';
+          statusEl.textContent = '✓ Rappels automatiques ACTIVÉS. Le système vérifie chaque jour à 9h si on est à J-15, J-10, J-5 ou J-2 du gala.';
+          if (installBtn) installBtn.style.display = 'none';
+          if (removeBtn) removeBtn.style.display = '';
+        } else {
+          statusEl.className = 'trigger-status not-installed';
+          statusEl.textContent = '○ Rappels automatiques DÉSACTIVÉS. Cliquez sur « Activer » pour planifier des rappels automatiques aux jalons J-15, J-10, J-5 et J-2.';
+          if (installBtn) installBtn.style.display = '';
+          if (removeBtn) removeBtn.style.display = 'none';
+        }
+
+        // Afficher les logs
+        renderReminderLogs(data.recentLogs || []);
+      }
+    } catch (err) {
+      statusEl.className = 'trigger-status';
+      statusEl.textContent = '⚠ Impossible de vérifier l\'état : ' + err.message + ' (assurez-vous que le code Apps Script v9 est déployé)';
+    }
+  }
+
+  function renderReminderLogs(logs) {
+    const container = document.getElementById('reminder-logs');
+    if (!container) return;
+
+    if (!logs || logs.length === 0) {
+      container.innerHTML = '<h4 class="reminder-section-title">📋 Derniers envois</h4><div class="reminder-help">Aucun rappel envoyé pour le moment.</div>';
+      return;
+    }
+
+    let html = '<h4 class="reminder-section-title">📋 Derniers envois</h4>';
+    logs.forEach(log => {
+      const date = new Date(log.date);
+      const dateStr = date.toLocaleString('fr-CA', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+      const typeStr = log.type === 'notVoted' ? 'Non-votants' :
+                      log.type === 'incomplete' ? 'Incomplets' :
+                      log.type === 'both' ? 'Tous' :
+                      log.type.startsWith('auto-J-') ? '🤖 Auto ' + log.type.replace('auto-', '') :
+                      log.type;
+      html += `
+        <div class="reminder-log-entry">
+          <span class="reminder-log-date">${dateStr}</span>
+          <span class="reminder-log-type">${typeStr}</span>
+          <span class="reminder-log-sent">${log.sent} envoyés</span>
+          <span class="reminder-log-failed">${log.failed} échecs</span>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  async function installTrigger() {
+    if (!scriptUrl) {
+      alert("URL Apps Script non configurée.");
+      return;
+    }
+    if (!galaDate) {
+      alert("⚠ Configurez d'abord la date du gala et enregistrez avant d'activer les rappels automatiques.");
+      return;
+    }
+
+    if (!confirm(
+      "Activer les rappels automatiques?\n\n" +
+      "Un script s'exécutera chaque matin à 9h. Quand on sera à J-15, J-10, J-5 ou J-2 du gala, il enverra automatiquement les rappels aux non-votants ET aux incomplets.\n\n" +
+      "Vous devrez peut-être autoriser le script dans Google Apps Script lors de l'activation.\n\n" +
+      "Continuer?"
+    )) return;
+
+    try {
+      await fetch(scriptUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'installTrigger' })
+      });
+
+      await new Promise(r => setTimeout(r, 1500));
+      await checkTriggerStatus();
+
+      alert("✓ Demande d'activation envoyée. Vérifiez le statut ci-dessus.");
+    } catch (err) {
+      alert("Erreur : " + err.message);
+    }
+  }
+
+  async function removeTrigger() {
+    if (!confirm("Désactiver les rappels automatiques?")) return;
+
+    try {
+      await fetch(scriptUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'removeTrigger' })
+      });
+
+      await new Promise(r => setTimeout(r, 1000));
+      await checkTriggerStatus();
+
+      alert("✓ Rappels automatiques désactivés.");
+    } catch (err) {
+      alert("Erreur : " + err.message);
+    }
   }
 
   // ============================================
