@@ -1037,6 +1037,101 @@
     font-family: 'Inter', sans-serif;
   }
 
+  /* Bannière de restauration de brouillon */
+  .draft-restore-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, rgba(201, 169, 97, 0.15), rgba(201, 169, 97, 0.05));
+    border: 1px solid var(--gold-dark);
+    border-left: 4px solid var(--gold);
+    border-radius: 4px;
+    flex-wrap: wrap;
+  }
+
+  .draft-restore-icon {
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .draft-restore-text {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .draft-restore-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--gold);
+    margin-bottom: 2px;
+  }
+
+  .draft-restore-detail {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Inter', sans-serif;
+  }
+
+  .draft-restore-detail strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .draft-restore-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .draft-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+  }
+
+  .draft-btn:hover {
+    color: var(--text);
+    border-color: var(--gold-dark);
+  }
+
+  .draft-btn-restore {
+    color: var(--gold);
+    border-color: var(--gold-dark);
+  }
+
+  .draft-btn-restore:hover {
+    background: var(--gold);
+    color: var(--bg);
+  }
+
+  .draft-btn-discard {
+    color: var(--danger-light);
+    border-color: var(--danger);
+    opacity: 0.7;
+  }
+
+  .draft-btn-discard:hover {
+    opacity: 1;
+    background: rgba(194, 84, 80, 0.1);
+  }
+
+  @media (max-width: 600px) {
+    .draft-restore-banner { flex-direction: column; align-items: stretch; text-align: center; }
+    .draft-restore-actions { justify-content: center; }
+  }
+
   /* Bannière de reprise (votant qui a déjà complété certaines catégories) */
   .resume-banner {
     display: flex;
@@ -1826,7 +1921,12 @@
   <div class="company-name" style="margin-bottom: 24px;">BGM · 40<sup style="font-size:0.5em">e</sup> Anniversaire</div>
   <div class="ornament">✦ ✦ ✦</div>
   <h2>Merci, <em id="thanks-name">cher collègue</em></h2>
-  <p>Vos votes ont bien été enregistrés.</p>
+  <p id="thanks-message">Vos votes ont bien été enregistrés.</p>
+  <div id="thanks-partial-info" class="partial-info" style="display:none;">
+    <p style="color: var(--gold); font-style: italic; margin-top: 16px;">
+      ↻ <strong>Vote partiel enregistré.</strong> Vous pouvez revenir compléter les autres catégories à tout moment en sélectionnant votre nom — seules les questions non répondues seront affichées.
+    </p>
+  </div>
 </div>
 
 <!-- PASSWORD MODAL -->
@@ -2336,25 +2436,61 @@
       return;
     }
 
-    // Brouillon existant
+    // Brouillon existant : afficher une bannière discrète (pas de confirm() qui peut effacer)
+    showDraftRestoreBanner(draft);
+  }
+
+  function showDraftRestoreBanner(draft) {
+    // Si la bannière existe déjà, ne pas en créer une autre
+    if (document.getElementById('draft-restore-banner')) return;
+
     const voterName = draft.voter || 'quelqu\'un';
     const numSelections = draft.selections ? Object.keys(draft.selections).length : 0;
     const draftDate = new Date(draft.timestamp || Date.now()).toLocaleString('fr-CA', {
       day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
     });
 
-    const message = `📋 Un brouillon existe sur ce navigateur :\n\n` +
-      `• Votant : ${voterName}\n` +
-      `• ${numSelections} choix déjà faits\n` +
-      `• Date : ${draftDate}\n\n` +
-      `Cliquez OK pour CONTINUER ce brouillon.\n` +
-      `Cliquez Annuler pour COMMENCER UN NOUVEAU sondage (le brouillon sera effacé).`;
+    const banner = document.createElement('div');
+    banner.id = 'draft-restore-banner';
+    banner.className = 'draft-restore-banner';
+    banner.innerHTML = `
+      <div class="draft-restore-icon">📋</div>
+      <div class="draft-restore-text">
+        <div class="draft-restore-title">Brouillon trouvé sur ce navigateur</div>
+        <div class="draft-restore-detail">
+          <strong>${escapeHtml(voterName)}</strong> · ${numSelections} choix · ${draftDate}
+        </div>
+      </div>
+      <div class="draft-restore-actions">
+        <button type="button" class="draft-btn draft-btn-restore" id="draft-btn-restore-yes">↻ Restaurer</button>
+        <button type="button" class="draft-btn draft-btn-discard" id="draft-btn-discard-yes">✕ Effacer</button>
+        <button type="button" class="draft-btn draft-btn-close" id="draft-btn-close" title="Garder le brouillon, juste fermer ce message">Fermer</button>
+      </div>
+    `;
 
-    if (confirm(message)) {
-      restoreDraft(draft);
-    } else {
-      clearDraft();
+    // Insérer la bannière au début du container principal
+    const container = document.getElementById('form-container');
+    if (container) {
+      container.insertBefore(banner, container.firstChild);
     }
+
+    // Listeners
+    document.getElementById('draft-btn-restore-yes').addEventListener('click', () => {
+      restoreDraft(draft);
+      banner.remove();
+    });
+
+    document.getElementById('draft-btn-discard-yes').addEventListener('click', () => {
+      if (confirm("Effacer définitivement ce brouillon? Cette action est irréversible.")) {
+        clearDraft();
+        banner.remove();
+      }
+    });
+
+    document.getElementById('draft-btn-close').addEventListener('click', () => {
+      // Juste fermer la bannière sans toucher au brouillon
+      banner.remove();
+    });
   }
 
   async function loadVoterStatus(voterName) {
@@ -2945,70 +3081,70 @@
       }
     });
 
-    // Appliquer la règle de validation
-    if (validationMode === 'strict') {
-      // STRICT : toutes les catégories doivent être 100% complètes
-      if (incomplete.length > 0) {
-        const list = incomplete.slice(0, 10)
-          .map(c => `• Catégorie ${c.num} (${c.name}) — ${c.filled} / ${choicesPerCategory} choix`)
-          .join('\n');
-        const more = incomplete.length > 10 ? `\n... et ${incomplete.length - 10} autre(s)` : '';
+    // RÈGLE : Les catégories PARTIELLES (1-2 choix sur 3) sont TOUJOURS interdites.
+    //   → Soit on ne touche pas, soit on remplit complètement.
+    // En mode STRICT : il faut aussi avoir AU MOINS UNE catégorie complète à soumettre.
+    // En mode PERMISSIF : on peut soumettre tant qu'il n'y a pas de partielles.
 
-        alert(
-          `❌ Impossible de soumettre — Sondage incomplet\n\n` +
-          `Le mode strict exige que toutes les catégories soient complètement remplies (${choicesPerCategory} choix par catégorie).\n\n` +
-          `Catégories incomplètes (${incomplete.length}) :\n${list}${more}\n\n` +
-          `Veuillez compléter toutes les catégories avant de soumettre.`
-        );
+    // 1. BLOQUER si catégories partielles (peu importe le mode)
+    if (partiallyFilled.length > 0) {
+      const list = partiallyFilled.slice(0, 10).map(num => {
+        const cat = normalizeCategory(categories[num - 1]);
+        const info = incomplete.find(c => c.num === num);
+        return `• Catégorie ${num} (${cat.name}) — ${info ? info.filled : '?'} / ${choicesPerCategory} choix`;
+      }).join('\n');
+      const more = partiallyFilled.length > 10 ? `\n... et ${partiallyFilled.length - 10} autre(s)` : '';
 
-        // Scroller vers la première catégorie incomplète
-        const firstIncomplete = document.getElementById(`category-${incomplete[0].num}`);
-        if (firstIncomplete) {
-          firstIncomplete.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          firstIncomplete.classList.add('incomplete-warning');
-        }
-        return;
+      alert(
+        `❌ Impossible de soumettre — Catégories partiellement remplies\n\n` +
+        `Pour chaque catégorie, vous devez soit :\n` +
+        `  • La COMPLÉTER (${choicesPerCategory} choix) → elle sera enregistrée\n` +
+        `  • La LAISSER VIDE → vous pourrez revenir la compléter plus tard\n\n` +
+        `Catégories à corriger (${partiallyFilled.length}) :\n${list}${more}\n\n` +
+        `Complétez-les ou videz-les avant de soumettre.`
+      );
+
+      const firstPartial = document.getElementById(`category-${partiallyFilled[0]}`);
+      if (firstPartial) {
+        firstPartial.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        firstPartial.classList.add('incomplete-warning');
       }
-    } else {
-      // PERMISSIF : au moins 1 choix par catégorie obligatoire
-      if (totallyEmpty.length > 0) {
-        const catNames = totallyEmpty.slice(0, 10)
-          .map(num => {
-            const cat = normalizeCategory(categories[num - 1]);
-            return `• Catégorie ${num} (${cat.name})`;
-          })
-          .join('\n');
-        const more = totallyEmpty.length > 10 ? `\n... et ${totallyEmpty.length - 10} autre(s)` : '';
+      return;
+    }
 
-        alert(
-          `❌ Impossible de soumettre — Catégories vides\n\n` +
-          `Le mode permissif exige au moins 1 choix par catégorie.\n\n` +
-          `Catégories totalement vides (${totallyEmpty.length}) :\n${catNames}${more}\n\n` +
-          `Veuillez ajouter au moins 1 choix par catégorie.`
-        );
+    // 2. Compter les catégories complètes (à soumettre)
+    const visibleCategoriesCount = categories.filter(cat => !alreadyCompletedCategories.has(normalizeCategory(cat).name)).length;
+    const completeCount = visibleCategoriesCount - totallyEmpty.length; // partial est forcément 0 ici
 
+    // 3. Si rien à soumettre, bloquer
+    if (completeCount === 0) {
+      alert(
+        `❌ Aucune catégorie à soumettre\n\n` +
+        `Vous n'avez complété aucune catégorie. Remplissez au moins une catégorie complètement avant de soumettre.`
+      );
+      return;
+    }
+
+    // 4. Mode strict : si on n'a pas TOUT complété, demander confirmation
+    if (validationMode === 'strict' && totallyEmpty.length > 0) {
+      const list = totallyEmpty.slice(0, 10).map(num => {
+        const cat = normalizeCategory(categories[num - 1]);
+        return `• Catégorie ${num} (${cat.name})`;
+      }).join('\n');
+      const more = totallyEmpty.length > 10 ? `\n... et ${totallyEmpty.length - 10} autre(s)` : '';
+
+      const proceed = confirm(
+        `⚠ Sondage incomplet — Soumettre quand même?\n\n` +
+        `Vous avez ${completeCount} catégorie(s) complète(s) prête(s) à soumettre.\n` +
+        `Il vous reste ${totallyEmpty.length} catégorie(s) non commencée(s) :\n\n${list}${more}\n\n` +
+        `OK = Soumettre ces ${completeCount} catégorie(s) maintenant\n` +
+        `  → Vous pourrez revenir compléter les autres plus tard\n\n` +
+        `Annuler = Retourner remplir`
+      );
+      if (!proceed) {
         const firstEmpty = document.getElementById(`category-${totallyEmpty[0]}`);
-        if (firstEmpty) {
-          firstEmpty.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          firstEmpty.classList.add('incomplete-warning');
-        }
+        if (firstEmpty) firstEmpty.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
-      }
-
-      // Avertir si des catégories sont partiellement remplies (mais OK)
-      if (partiallyFilled.length > 0) {
-        const proceed = confirm(
-          `⚠ Attention : Sondage partiellement complet\n\n` +
-          `${partiallyFilled.length} catégorie(s) ont moins de ${choicesPerCategory} choix sur ${choicesPerCategory} : ${partiallyFilled.join(', ')}\n\n` +
-          `Voulez-vous tout de même soumettre, ou compléter d'abord?\n\n` +
-          `OK = Soumettre quand même\n` +
-          `Annuler = Retourner compléter`
-        );
-        if (!proceed) {
-          const firstPartial = document.getElementById(`category-${partiallyFilled[0]}`);
-          if (firstPartial) firstPartial.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          return;
-        }
       }
     }
 
@@ -3019,6 +3155,27 @@
       if (alreadyCompletedCategories.has(catObj.name)) return;
       const i = idx + 1;
 
+      // Vérifier d'abord si cette catégorie est complètement remplie
+      // (sinon ne pas l'inclure dans la soumission)
+      let isFullyFilled = false;
+      if (catObj.teamMode) {
+        let teamsComplete = 0;
+        for (let j = 1; j <= choicesPerCategory; j++) {
+          const a = document.getElementById(`select-${i}-${j}-a`);
+          const b = document.getElementById(`select-${i}-${j}-b`);
+          if (a && b && a.value && b.value) teamsComplete++;
+        }
+        isFullyFilled = (teamsComplete === choicesPerCategory);
+      } else {
+        const selects = document.querySelectorAll(`select[data-cat="${i}"]`);
+        const filledCount = Array.from(selects).filter(s => s.value).length;
+        isFullyFilled = (filledCount === choicesPerCategory);
+      }
+
+      // Si pas complète, on ne soumet pas (pour permettre de revenir plus tard)
+      if (!isFullyFilled) return;
+
+      // Catégorie complète : on construit les votes
       if (catObj.teamMode) {
         // Mode équipe : pour chaque choix, combiner les 2 personnes en une paire
         for (let j = 1; j <= choicesPerCategory; j++) {
@@ -3028,14 +3185,8 @@
           const valB = (b && b.value) || '';
 
           // Trier alphabétiquement pour que "Marie + Pierre" et "Pierre + Marie" comptent comme la même équipe
-          let pairValue = '';
-          if (valA && valB) {
-            const sorted = [valA, valB].sort((x, y) => x.localeCompare(y, 'fr'));
-            pairValue = sorted[0] + ' + ' + sorted[1];
-          } else if (valA || valB) {
-            // Équipe incomplète : on stocke quand même ce qu'on a (pour debug)
-            pairValue = (valA || '') + ' + ' + (valB || '');
-          }
+          const sorted = [valA, valB].sort((x, y) => x.localeCompare(y, 'fr'));
+          const pairValue = sorted[0] + ' + ' + sorted[1];
 
           votes.push({
             categorie: catObj.name,
@@ -3057,6 +3208,11 @@
         });
       }
     });
+
+    if (votes.length === 0) {
+      alert("Aucun vote à soumettre. Complétez au moins une catégorie d'abord.");
+      return;
+    }
 
     const payload = {
       voter: voterName,
@@ -3081,11 +3237,28 @@
         body: JSON.stringify(payload)
       });
 
+      // Calculer si la soumission complète tout ou non
+      const completedAfter = alreadyCompletedCategories.size + (votes.length / choicesPerCategory);
+      const isFullyComplete = (completedAfter >= categories.length);
+
       document.getElementById('form-container').style.display = 'none';
       document.querySelector('.admin-trigger').style.display = 'none';
       const confirmation = document.getElementById('confirmation');
       confirmation.classList.add('show');
       document.getElementById('thanks-name').textContent = voterName;
+
+      // Adapter le message selon le statut
+      const thanksMessage = document.getElementById('thanks-message');
+      const partialInfo = document.getElementById('thanks-partial-info');
+      if (isFullyComplete) {
+        if (thanksMessage) thanksMessage.textContent = 'Vos votes ont bien été enregistrés. Votre sondage est complet!';
+        if (partialInfo) partialInfo.style.display = 'none';
+      } else {
+        const remaining = categories.length - completedAfter;
+        if (thanksMessage) thanksMessage.textContent = `${votes.length / choicesPerCategory} catégorie(s) enregistrée(s). Il vous reste ${remaining} catégorie(s) à compléter.`;
+        if (partialInfo) partialInfo.style.display = 'block';
+      }
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
 
       // Brouillon plus nécessaire — vote soumis avec succès
