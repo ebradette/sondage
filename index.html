@@ -2473,11 +2473,10 @@
     }
   });
 
-  document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeModal(overlay.id);
-    });
-  });
+  // Fermeture par clic en arrière-plan :
+  // - DÉSACTIVÉE pour 'admin-modal' (modale de travail, trop facile à fermer par erreur)
+  // - DÉSACTIVÉE pour 'password-modal' (idem, on veut taper le mot de passe sans risque)
+  // Les modales se ferment uniquement avec le bouton ✕ ou la touche Échap
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
