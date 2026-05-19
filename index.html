@@ -1037,6 +1037,41 @@
     font-family: 'Inter', sans-serif;
   }
 
+  /* Bannière de reprise (votant qui a déjà complété certaines catégories) */
+  .resume-banner {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 18px 24px;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, rgba(201, 169, 97, 0.12), rgba(201, 169, 97, 0.04));
+    border: 1px solid var(--gold-dark);
+    border-left: 4px solid var(--gold);
+    border-radius: 4px;
+  }
+
+  .resume-banner-icon {
+    font-size: 36px;
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    flex-shrink: 0;
+    line-height: 1;
+    font-style: italic;
+  }
+
+  .resume-banner-text {
+    flex: 1;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .resume-banner-text strong {
+    color: var(--gold-light);
+    font-weight: 600;
+  }
+
   /* Onglet Rappels */
   .reminder-section-title {
     font-family: 'Cormorant Garamond', serif;
@@ -2083,7 +2118,7 @@
   const STORAGE_KEY = "galaPollConfig_v5";
   const DRAFT_KEY = "galaPollDraft_v1";
   const DRAFT_EXPIRY_DAYS = 30;
-  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxbu927is7CTdGtR09THleBh_Re-MlzduD4ed2Q1WBvBu-ybhI9cbzbeQOdTiQlTxSFog/exec";
+  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHVYH5u9lVdznDFMmsy7j3jOjk6KssAUGwUCcF5eGZ4Qk4wOEAePvaTUimr7Z4kd7rgg/exec";
 
   let categories = [...DEFAULT_CATEGORIES];
   let employees = [...DEFAULT_EMPLOYEES];
@@ -2100,6 +2135,8 @@
   let surveyUrl = '';
   // Modèles d'emails de rappel
   let emailTemplates = getDefaultEmailTemplates();
+  // Liste des catégories déjà complétées par le votant actuel (pour les cacher)
+  let alreadyCompletedCategories = new Set();
   const rankLabels = ['Choix 1', 'Choix 2', 'Choix 3', 'Choix 4', 'Choix 5', 'Choix 6', 'Choix 7', 'Choix 8', 'Choix 9', 'Choix 10'];
 
   // ============================================
@@ -2320,6 +2357,25 @@
     }
   }
 
+  async function loadVoterStatus(voterName) {
+    if (!voterName || !scriptUrl) {
+      alreadyCompletedCategories = new Set();
+      return;
+    }
+
+    try {
+      const data = await jsonp(scriptUrl, { action: 'voterStatus', voter: voterName }, 10000);
+      if (data.status === 'ok' && Array.isArray(data.completedCategories)) {
+        alreadyCompletedCategories = new Set(data.completedCategories);
+      } else {
+        alreadyCompletedCategories = new Set();
+      }
+    } catch (e) {
+      console.warn("Impossible de récupérer le statut du votant :", e);
+      alreadyCompletedCategories = new Set();
+    }
+  }
+
   async function loadConfigFromServer() {
     if (!scriptUrl) return false;
     try {
@@ -2422,33 +2478,48 @@
     }
   }
 
-  function onVoterChange() {
+  async function onVoterChange() {
     // Quand le votant change, re-rendre le sondage en excluant son nom
-    // Mais d'abord, sauvegarder les sélections actuelles pour les restaurer
+    // ET charger ses catégories déjà complétées pour les cacher
+    const voterName = document.getElementById('voter-name').value;
+
+    // Sauvegarder les sélections actuelles pour les restaurer (sauf celles qui seront cachées)
     const savedSelections = {};
     document.querySelectorAll('select[data-cat]').forEach(s => {
       if (s.value) savedSelections[s.id] = s.value;
     });
 
+    // Charger le statut du votant depuis Google (catégories déjà complétées)
+    if (voterName) {
+      // Afficher un indicateur de chargement
+      const container = document.getElementById('categories-container');
+      const loadingDiv = document.createElement('div');
+      loadingDiv.className = 'voter-loading';
+      loadingDiv.innerHTML = '<div class="results-loading"><span class="spinner"></span> Vérification de tes votes précédents...</div>';
+      container.innerHTML = '';
+      container.appendChild(loadingDiv);
+
+      await loadVoterStatus(voterName);
+    } else {
+      alreadyCompletedCategories = new Set();
+    }
+
     renderPoll();
 
-    // Restaurer les sélections (sauf celles qui correspondent au votant maintenant exclu)
-    const voterName = document.getElementById('voter-name').value;
+    // Restaurer les sélections (uniquement pour les catégories encore visibles)
     Object.entries(savedSelections).forEach(([id, val]) => {
-      // Ne pas restaurer si la valeur est le nom du votant
-      if (val === voterName) return;
+      if (val === voterName) return; // Pas de self-vote
       const el = document.getElementById(id);
       if (el) {
-        // Vérifier que l'option existe toujours dans le select
         const optionExists = Array.from(el.options).some(o => o.value === val);
         if (optionExists) el.value = val;
       }
     });
 
-    // Re-vérifier les doublons dans chaque catégorie
-    for (let i = 1; i <= categories.length; i++) {
-      updateCategoryDuplicates(String(i));
-    }
+    // Re-vérifier les doublons dans chaque catégorie VISIBLE
+    document.querySelectorAll('select[data-cat]').forEach(s => {
+      updateCategoryDuplicates(s.dataset.cat);
+    });
     updateProgress();
 
     // Sauvegarder le brouillon
@@ -2468,8 +2539,29 @@
       .map(getEmployeeName)
       .filter(name => name.length > 0 && name !== voterName);
 
+    // Si certaines catégories sont déjà complétées, afficher une bannière
+    if (alreadyCompletedCategories.size > 0) {
+      const banner = document.createElement('div');
+      banner.className = 'resume-banner';
+      const remaining = categories.length - alreadyCompletedCategories.size;
+      banner.innerHTML = `
+        <div class="resume-banner-icon">↻</div>
+        <div class="resume-banner-text">
+          <strong>Bon retour, ${escapeHtml(voterName)}!</strong>
+          Tu as déjà répondu à <strong>${alreadyCompletedCategories.size}</strong> catégorie(s).
+          Il te reste <strong>${remaining}</strong> catégorie(s) à compléter ci-dessous.
+          Tes réponses précédentes restent secrètes et sauvegardées.
+        </div>
+      `;
+      container.appendChild(banner);
+    }
+
     categories.forEach((cat, idx) => {
       const catObj = normalizeCategory(cat);
+      // Si le votant a déjà complété cette catégorie, on la saute (ne pas l'afficher)
+      if (alreadyCompletedCategories.has(catObj.name)) {
+        return;
+      }
       const i = idx + 1;
       const num = String(i).padStart(2, '0');
       const catDiv = document.createElement('div');
@@ -2732,10 +2824,13 @@
     let totalFilled = 0;
     let totalRequired = 0;
     let categoriesCompleted = 0;
-    let categoriesTotal = categories.length;
+    let categoriesTotal = 0;
 
     categories.forEach((cat, idx) => {
       const catObj = normalizeCategory(cat);
+      // Ignorer les catégories déjà complétées par ce votant (elles ne sont pas affichées)
+      if (alreadyCompletedCategories.has(catObj.name)) return;
+      categoriesTotal++;
       const catNum = idx + 1;
       const catEl = document.getElementById(`category-${catNum}`);
       let catFilled = 0;
@@ -2821,6 +2916,9 @@
 
     categories.forEach((cat, idx) => {
       const catObj = normalizeCategory(cat);
+      // Si déjà complétée par ce votant, on ignore (n'apparaît pas dans le sondage)
+      if (alreadyCompletedCategories.has(catObj.name)) return;
+
       const i = idx + 1;
 
       let filledCount = 0;
@@ -2917,6 +3015,8 @@
     const votes = [];
     categories.forEach((cat, idx) => {
       const catObj = normalizeCategory(cat);
+      // Skipper les catégories déjà complétées (n'apparaissent pas dans le formulaire)
+      if (alreadyCompletedCategories.has(catObj.name)) return;
       const i = idx + 1;
 
       if (catObj.teamMode) {
@@ -2971,23 +3071,9 @@
     status.innerHTML = '<span class="spinner"></span>Vérification et envoi...';
 
     try {
-      // Vérification anti-doublon via JSONP
-      let alreadyVoted = false;
-      try {
-        const checkData = await jsonp(scriptUrl, { action: 'check', voter: voterName }, 8000);
-        alreadyVoted = checkData.alreadyVoted === true;
-      } catch(err) {
-        console.warn("Vérification doublon impossible :", err);
-      }
-
-      if (alreadyVoted) {
-        btn.disabled = false;
-        status.className = 'submit-status error show';
-        status.innerHTML = `❌ <strong>${escapeHtml(voterName)}</strong> a déjà soumis un vote. Chaque personne ne peut voter qu'une seule fois. Si c'est une erreur, contactez l'organisateur.`;
-        return;
-      }
-
       // Envoi du vote (POST no-cors)
+      // NOTE: Apps Script v10+ vérifie maintenant par (votant + catégorie) au lieu de juste votant,
+      // permettant à un votant de COMPLÉTER ses catégories manquantes sans recommencer.
       await fetch(scriptUrl, {
         method: 'POST',
         mode: 'no-cors',
