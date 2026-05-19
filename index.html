@@ -1037,99 +1037,49 @@
     font-family: 'Inter', sans-serif;
   }
 
-  /* Bannière de restauration de brouillon */
-  .draft-restore-banner {
+  /* Indicateur de brouillon restauré (petit toast en bas) */
+  .draft-restored-indicator {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--bg-card);
+    border: 1px solid var(--gold-dark);
+    border-left: 3px solid var(--gold);
+    color: var(--text);
+    padding: 12px 16px 12px 20px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 1001;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 16px 20px;
-    margin-bottom: 24px;
-    background: linear-gradient(135deg, rgba(201, 169, 97, 0.15), rgba(201, 169, 97, 0.05));
-    border: 1px solid var(--gold-dark);
-    border-left: 4px solid var(--gold);
-    border-radius: 4px;
-    flex-wrap: wrap;
+    gap: 12px;
+    max-width: 90vw;
   }
 
-  .draft-restore-icon {
-    font-size: 28px;
-    flex-shrink: 0;
-  }
-
-  .draft-restore-text {
-    flex: 1;
-    min-width: 200px;
-  }
-
-  .draft-restore-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--gold);
-    margin-bottom: 2px;
-  }
-
-  .draft-restore-detail {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-family: 'Inter', sans-serif;
-  }
-
-  .draft-restore-detail strong {
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .draft-restore-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
-  .draft-btn {
-    background: transparent;
-    color: var(--text-muted);
-    border: 1px solid var(--border);
-    padding: 8px 14px;
-    font-family: 'Inter', sans-serif;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: all 0.2s ease;
-  }
-
-  .draft-btn:hover {
-    color: var(--text);
-    border-color: var(--gold-dark);
-  }
-
-  .draft-btn-restore {
-    color: var(--gold);
-    border-color: var(--gold-dark);
-  }
-
-  .draft-btn-restore:hover {
-    background: var(--gold);
-    color: var(--bg);
-  }
-
-  .draft-btn-discard {
-    color: var(--danger-light);
-    border-color: var(--danger);
-    opacity: 0.7;
-  }
-
-  .draft-btn-discard:hover {
+  .draft-restored-indicator.show {
     opacity: 1;
-    background: rgba(194, 84, 80, 0.1);
+    transform: translateX(-50%) translateY(0);
   }
 
-  @media (max-width: 600px) {
-    .draft-restore-banner { flex-direction: column; align-items: stretch; text-align: center; }
-    .draft-restore-actions { justify-content: center; }
+  .draft-restored-indicator .indicator-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0 4px;
+    border-radius: 3px;
+    transition: color 0.2s ease;
+  }
+
+  .draft-restored-indicator .indicator-close:hover {
+    color: var(--text);
   }
 
   /* Bannière de reprise (votant qui a déjà complété certaines catégories) */
@@ -2436,61 +2386,42 @@
       return;
     }
 
-    // Brouillon existant : afficher une bannière discrète (pas de confirm() qui peut effacer)
-    showDraftRestoreBanner(draft);
+    // Restauration automatique du brouillon (pas de question, pour ne rien perdre par accident)
+    restoreDraft(draft);
+
+    // Afficher un petit indicateur discret pour informer l'utilisateur
+    showDraftRestoredIndicator(draft);
   }
 
-  function showDraftRestoreBanner(draft) {
-    // Si la bannière existe déjà, ne pas en créer une autre
-    if (document.getElementById('draft-restore-banner')) return;
-
-    const voterName = draft.voter || 'quelqu\'un';
+  function showDraftRestoredIndicator(draft) {
     const numSelections = draft.selections ? Object.keys(draft.selections).length : 0;
-    const draftDate = new Date(draft.timestamp || Date.now()).toLocaleString('fr-CA', {
-      day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
-    });
+    const voterName = draft.voter || '';
 
-    const banner = document.createElement('div');
-    banner.id = 'draft-restore-banner';
-    banner.className = 'draft-restore-banner';
-    banner.innerHTML = `
-      <div class="draft-restore-icon">📋</div>
-      <div class="draft-restore-text">
-        <div class="draft-restore-title">Brouillon trouvé sur ce navigateur</div>
-        <div class="draft-restore-detail">
-          <strong>${escapeHtml(voterName)}</strong> · ${numSelections} choix · ${draftDate}
-        </div>
-      </div>
-      <div class="draft-restore-actions">
-        <button type="button" class="draft-btn draft-btn-restore" id="draft-btn-restore-yes">↻ Restaurer</button>
-        <button type="button" class="draft-btn draft-btn-discard" id="draft-btn-discard-yes">✕ Effacer</button>
-        <button type="button" class="draft-btn draft-btn-close" id="draft-btn-close" title="Garder le brouillon, juste fermer ce message">Fermer</button>
-      </div>
-    `;
-
-    // Insérer la bannière au début du container principal
-    const container = document.getElementById('form-container');
-    if (container) {
-      container.insertBefore(banner, container.firstChild);
+    let indicator = document.getElementById('draft-restored-indicator');
+    if (!indicator) {
+      indicator = document.createElement('div');
+      indicator.id = 'draft-restored-indicator';
+      indicator.className = 'draft-restored-indicator';
+      document.body.appendChild(indicator);
     }
 
-    // Listeners
-    document.getElementById('draft-btn-restore-yes').addEventListener('click', () => {
-      restoreDraft(draft);
-      banner.remove();
+    const msg = voterName
+      ? `↻ Brouillon restauré pour ${escapeHtml(voterName)} (${numSelections} choix)`
+      : `↻ Brouillon restauré (${numSelections} choix)`;
+
+    indicator.innerHTML = msg + ` <button class="indicator-close" title="Fermer">×</button>`;
+    indicator.classList.add('show');
+
+    // Listener pour fermer
+    indicator.querySelector('.indicator-close').addEventListener('click', () => {
+      indicator.classList.remove('show');
     });
 
-    document.getElementById('draft-btn-discard-yes').addEventListener('click', () => {
-      if (confirm("Effacer définitivement ce brouillon? Cette action est irréversible.")) {
-        clearDraft();
-        banner.remove();
-      }
-    });
-
-    document.getElementById('draft-btn-close').addEventListener('click', () => {
-      // Juste fermer la bannière sans toucher au brouillon
-      banner.remove();
-    });
+    // Auto-fermer après 6 secondes (laisser le temps de lire)
+    clearTimeout(indicator._hideTimeout);
+    indicator._hideTimeout = setTimeout(() => {
+      indicator.classList.remove('show');
+    }, 6000);
   }
 
   async function loadVoterStatus(voterName) {
