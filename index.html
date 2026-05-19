@@ -881,6 +881,42 @@
     user-select: none;
   }
 
+  /* Éditeur de pondération par rang */
+  .rank-points-row {
+    display: grid;
+    grid-template-columns: 100px 80px 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .rank-points-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--gold);
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+
+  .rank-points-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 3px;
+    outline: none;
+    text-align: center;
+  }
+
+  .rank-points-input:focus { border-color: var(--gold); }
+
+  .rank-points-unit {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
   .team-toggle input[type="checkbox"] {
     position: absolute;
     opacity: 0;
@@ -1198,6 +1234,22 @@
   .nominee-row.winner .nominee-votes { color: var(--gold); font-weight: 600; }
   .nominee-row.tied .nominee-rank::after { content: ' ⚖'; font-size: 10px; }
 
+  .nominee-votes .rank-detail {
+    display: block;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 2px;
+    font-weight: normal;
+    letter-spacing: 0;
+    text-transform: none;
+    font-style: italic;
+  }
+
+  .nominee-row.winner .nominee-votes .rank-detail {
+    color: var(--gold-light);
+    opacity: 0.7;
+  }
+
   .tied-warning {
     margin-top: 16px;
     padding: 12px 16px;
@@ -1477,6 +1529,15 @@
         <label>Choix par catégorie</label>
         <input type="number" id="setting-choices" min="1" max="10" value="3" class="url-input">
       </div>
+
+      <div class="config-field">
+        <label>Pondération par rang (système de points)</label>
+        <div class="admin-info" style="margin: 8px 0;">
+          Points attribués par rang lors du calcul des résultats. Plus le rang est élevé (1er choix), plus la valeur en points devrait être grande.<br>
+          <em>Exemple : 1er choix = 3 pts, 2e choix = 2 pts, 3e choix = 1 pt.</em>
+        </div>
+        <div id="rank-points-editor"></div>
+      </div>
     </div>
 
     <div class="admin-actions">
@@ -1541,6 +1602,8 @@
   let choicesPerCategory = 3;
   let scriptUrl = DEFAULT_SCRIPT_URL;
   let currentResults = null;
+  // Pondération par rang : [points pour rang 1, points pour rang 2, ...]
+  let rankPoints = [3, 2, 1];
   const rankLabels = ['Choix 1', 'Choix 2', 'Choix 3', 'Choix 4', 'Choix 5', 'Choix 6', 'Choix 7', 'Choix 8', 'Choix 9', 'Choix 10'];
 
   // ============================================
@@ -1620,6 +1683,9 @@
         if (Array.isArray(cfg.categories) && cfg.categories.length) categories = normalizeCategories(cfg.categories);
         if (Array.isArray(cfg.employees) && cfg.employees.length) employees = cfg.employees;
         if (typeof cfg.choicesPerCategory === 'number') choicesPerCategory = cfg.choicesPerCategory;
+        if (Array.isArray(cfg.rankPoints) && cfg.rankPoints.length) {
+          rankPoints = cfg.rankPoints.map(p => parseInt(p) || 0);
+        }
         return true;
       }
       return false;
@@ -1639,7 +1705,7 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           action: 'saveConfig',
-          config: { categories, employees, choicesPerCategory }
+          config: { categories, employees, choicesPerCategory, rankPoints }
         })
       });
       return true;
@@ -2190,6 +2256,30 @@
     document.getElementById('setting-choices').value = choicesPerCategory;
     renderCategoriesEditor();
     renderEmployeesEditor();
+    renderRankPointsEditor();
+  }
+
+  function renderRankPointsEditor() {
+    const editor = document.getElementById('rank-points-editor');
+    if (!editor) return;
+    editor.innerHTML = '';
+    // Assurer qu'on a au moins choicesPerCategory entrées
+    while (rankPoints.length < choicesPerCategory) {
+      rankPoints.push(1);
+    }
+    // Afficher uniquement les rangs utilisés (jusqu'à choicesPerCategory)
+    for (let i = 0; i < choicesPerCategory; i++) {
+      const row = document.createElement('div');
+      row.className = 'rank-points-row';
+      const pts = rankPoints[i] !== undefined ? rankPoints[i] : 1;
+      const rankLabel = rankLabels[i] || `Choix ${i + 1}`;
+      row.innerHTML = `
+        <div class="rank-points-label">${rankLabel}</div>
+        <input type="number" min="0" max="100" value="${pts}" data-rank-idx="${i}" class="rank-points-input">
+        <span class="rank-points-unit">point${pts > 1 ? 's' : ''}</span>
+      `;
+      editor.appendChild(row);
+    }
   }
 
   function renderCategoriesEditor() {
@@ -2364,6 +2454,23 @@
       choicesPerCategory = choicesInput;
     }
 
+    // Capturer les pondérations par rang
+    const newRankPoints = [];
+    document.querySelectorAll('.rank-points-input').forEach(input => {
+      const idx = parseInt(input.dataset.rankIdx);
+      const val = parseInt(input.value);
+      if (!isNaN(idx) && !isNaN(val) && val >= 0) {
+        newRankPoints[idx] = val;
+      }
+    });
+    if (newRankPoints.length > 0) {
+      // S'assurer qu'on a une valeur pour chaque rang utilisé
+      for (let i = 0; i < choicesPerCategory; i++) {
+        if (newRankPoints[i] === undefined) newRankPoints[i] = 1;
+      }
+      rankPoints = newRankPoints;
+    }
+
     if (categories.length === 0) {
       alert("Au moins une catégorie est requise.");
       categories = [...DEFAULT_CATEGORIES];
@@ -2412,6 +2519,7 @@
     categories = [...DEFAULT_CATEGORIES];
     employees = [...DEFAULT_EMPLOYEES];
     choicesPerCategory = 3;
+    rankPoints = [3, 2, 1];
 
     // Sauvegarder sur Google
     let success = false;
@@ -2595,8 +2703,18 @@
     `;
 
     const tally = data.tally || {};
+    const tallyByRank = data.tallyByRank || {};
+    const hasRankData = Object.keys(tallyByRank).length > 0;
     let html = '<div class="winners-list">';
     let hasTies = false;
+
+    // Si pas de tallyByRank dans la réponse (vieux Apps Script), avertir mais continuer
+    if (!hasRankData) {
+      html = `<div class="admin-info" style="margin-bottom: 16px; background: rgba(194, 84, 80, 0.1); border-left-color: var(--danger);">
+        ⚠️ Le système de pointage par rang nécessite le nouveau code Apps Script (v7).<br>
+        Les résultats ci-dessous utilisent le comptage simple. Mettez à jour le code Apps Script pour activer le système de points.
+      </div>` + html;
+    }
 
     categories.forEach((cat, idx) => {
       const catObj = normalizeCategory(cat);
@@ -2604,8 +2722,40 @@
       const isTeam = catObj.teamMode;
       const num = String(idx + 1).padStart(2, '0');
       const catTally = tally[catName] || {};
-      const sorted = Object.entries(catTally)
-        .sort((a, b) => b[1] - a[1])
+      const catTallyByRank = tallyByRank[catName] || {};
+
+      // Calculer le score pondéré pour chaque personne/paire
+      const scores = {};
+      const allNames = new Set(Object.keys(catTally));
+      allNames.forEach(name => {
+        const ranks = catTallyByRank[name] || {};
+        let score = 0;
+        let totalVotes = catTally[name] || 0;
+        let firstChoices = 0;
+        // Calculer score pondéré
+        for (const rang in ranks) {
+          const r = parseInt(rang);
+          const count = ranks[rang];
+          const ptsForRank = rankPoints[r - 1] !== undefined ? rankPoints[r - 1] : 0;
+          score += count * ptsForRank;
+          if (r === 1) firstChoices = count;
+        }
+        scores[name] = {
+          name: name,
+          score: score,
+          votes: totalVotes,
+          firstChoices: firstChoices,
+          rankBreakdown: ranks
+        };
+      });
+
+      // Trier : score DESC, puis firstChoices DESC, puis votes DESC
+      const sorted = Object.values(scores)
+        .sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          if (b.firstChoices !== a.firstChoices) return b.firstChoices - a.firstChoices;
+          return b.votes - a.votes;
+        })
         .slice(0, 4);
 
       const teamBadgeHtml = isTeam ? '<span class="team-badge">👥 Équipes</span>' : '';
@@ -2621,23 +2771,43 @@
           </div>
         `;
       } else {
-        const winnerCount = sorted[0][1];
-        const tiedAtTop = sorted.filter(([,c]) => c === winnerCount).length > 1;
+        // Détection d'égalité au 1er rang (même score ET même firstChoices)
+        const winner = sorted[0];
+        const tiedAtTop = sorted.filter(p =>
+          p.score === winner.score && p.firstChoices === winner.firstChoices
+        ).length > 1;
         if (tiedAtTop) hasTies = true;
 
         let nomineesHtml = '';
         sorted.forEach((entry, i) => {
-          const [name, count] = entry;
           const isWinner = i === 0;
           const isTiedHere = isWinner && tiedAtTop;
           const rankLabel = isTeam ? 'Équipe ' + (i + 1) : (i + 1);
+
+          // Détail par rang : "3×1er, 5×2e, 1×3e"
+          const breakdown = [];
+          for (let r = 1; r <= choicesPerCategory; r++) {
+            const cnt = entry.rankBreakdown[r] || 0;
+            if (cnt > 0) {
+              let suffix;
+              if (r === 1) suffix = 'er';
+              else suffix = 'e';
+              breakdown.push(`${cnt}×${r}${suffix}`);
+            }
+          }
+          const breakdownStr = breakdown.length > 0 ? ` (${breakdown.join(', ')})` : '';
+
+          const scoreDisplay = hasRankData
+            ? `<strong>${entry.score} pt${entry.score > 1 ? 's' : ''}</strong><span class="rank-detail">${breakdownStr}</span>`
+            : `${entry.votes} vote${entry.votes > 1 ? 's' : ''}`;
+
           nomineesHtml += `
             <div class="nominee-row${isWinner ? ' winner' : ''}${isTiedHere ? ' tied' : ''}">
               <div class="nominee-rank">${rankLabel}</div>
               <div class="nominee-name">
-                ${escapeHtml(name)}${isWinner ? '<span class="crown">👑</span>' : ''}
+                ${escapeHtml(entry.name)}${isWinner ? '<span class="crown">👑</span>' : ''}
               </div>
-              <div class="nominee-votes">${count} vote${count > 1 ? 's' : ''}</div>
+              <div class="nominee-votes">${scoreDisplay}</div>
             </div>
           `;
         });
@@ -2668,7 +2838,7 @@
     html += '</div>';
 
     if (hasTies) {
-      html += '<div class="tied-warning">⚖ Certaines catégories ont une égalité au 1er rang. Vous devrez trancher manuellement.</div>';
+      html += '<div class="tied-warning">⚖ Certaines catégories ont une égalité parfaite au 1er rang (même score ET même nombre de 1ers choix). Vous devrez trancher manuellement.</div>';
     }
 
     contentEl.innerHTML = html;
@@ -2722,34 +2892,84 @@
       return;
     }
     const tally = currentResults.tally || {};
-    let csv = 'Catégorie,Mode,Description,Rang,Nominé,Nombre de votes,Statut,Égalité au 1er\n';
+    const tallyByRank = currentResults.tallyByRank || {};
+    const hasRankData = Object.keys(tallyByRank).length > 0;
+
+    let csv;
+    if (hasRankData) {
+      csv = 'Catégorie,Mode,Description,Rang,Nominé,Score (pts),Votes totaux,1ers choix,Détail par rang,Statut,Égalité au 1er\n';
+    } else {
+      csv = 'Catégorie,Mode,Description,Rang,Nominé,Nombre de votes,Statut,Égalité au 1er\n';
+    }
+
     categories.forEach(cat => {
       const catObj = normalizeCategory(cat);
       const catName = catObj.name;
       const mode = catObj.teamMode ? 'Équipe' : 'Solo';
-      // Convertir le HTML de la description en texte simple pour le CSV
       const descTemp = document.createElement('div');
       descTemp.innerHTML = catObj.description;
       const catDesc = (descTemp.textContent || '').replace(/\s+/g, ' ').trim();
       const catTally = tally[catName] || {};
-      const sorted = Object.entries(catTally)
-        .sort((a, b) => b[1] - a[1])
+      const catTallyByRank = tallyByRank[catName] || {};
+
+      // Calculer les scores
+      const scores = {};
+      Object.keys(catTally).forEach(name => {
+        const ranks = catTallyByRank[name] || {};
+        let score = 0;
+        let firstChoices = 0;
+        for (const rang in ranks) {
+          const r = parseInt(rang);
+          score += ranks[rang] * (rankPoints[r - 1] !== undefined ? rankPoints[r - 1] : 0);
+          if (r === 1) firstChoices = ranks[rang];
+        }
+        scores[name] = { name, score, votes: catTally[name] || 0, firstChoices, ranks };
+      });
+
+      const sorted = Object.values(scores)
+        .sort((a, b) => {
+          if (b.score !== a.score) return b.score - a.score;
+          if (b.firstChoices !== a.firstChoices) return b.firstChoices - a.firstChoices;
+          return b.votes - a.votes;
+        })
         .slice(0, 4);
 
       if (sorted.length === 0) {
-        csv += `"${catName.replace(/"/g,'""')}","${mode}","${catDesc.replace(/"/g,'""')}","-","(aucun vote)","0","-",""\n`;
+        if (hasRankData) {
+          csv += `"${catName.replace(/"/g,'""')}","${mode}","${catDesc.replace(/"/g,'""')}","-","(aucun vote)","0","0","0","","-",""\n`;
+        } else {
+          csv += `"${catName.replace(/"/g,'""')}","${mode}","${catDesc.replace(/"/g,'""')}","-","(aucun vote)","0","-",""\n`;
+        }
       } else {
-        const winnerCount = sorted[0][1];
-        const tiedAtTop = sorted.filter(([,c]) => c === winnerCount).length > 1;
+        const winner = sorted[0];
+        const tiedAtTop = sorted.filter(p =>
+          p.score === winner.score && p.firstChoices === winner.firstChoices
+        ).length > 1;
 
-        sorted.forEach(([name, count], i) => {
+        sorted.forEach((entry, i) => {
           const statut = i === 0 ? 'GAGNANT' : 'Nominé';
           const rangLabel = catObj.teamMode ? ('Équipe ' + (i+1)) : (i+1);
-          csv += `"${catName.replace(/"/g,'""')}","${mode}","${catDesc.replace(/"/g,'""')}","${rangLabel}","${name.replace(/"/g,'""')}","${count}","${statut}","${i === 0 && tiedAtTop ? 'OUI' : ''}"\n`;
+
+          if (hasRankData) {
+            const breakdown = [];
+            for (let r = 1; r <= choicesPerCategory; r++) {
+              const cnt = entry.ranks[r] || 0;
+              if (cnt > 0) breakdown.push(`${cnt}×${r}${r === 1 ? 'er' : 'e'}`);
+            }
+            csv += `"${catName.replace(/"/g,'""')}","${mode}","${catDesc.replace(/"/g,'""')}","${rangLabel}","${entry.name.replace(/"/g,'""')}","${entry.score}","${entry.votes}","${entry.firstChoices}","${breakdown.join(', ')}","${statut}","${i === 0 && tiedAtTop ? 'OUI' : ''}"\n`;
+          } else {
+            csv += `"${catName.replace(/"/g,'""')}","${mode}","${catDesc.replace(/"/g,'""')}","${rangLabel}","${entry.name.replace(/"/g,'""')}","${entry.votes}","${statut}","${i === 0 && tiedAtTop ? 'OUI' : ''}"\n`;
+          }
         });
       }
-      csv += '"","","","","","","",""\n';
+      // Ligne vide entre catégories
+      if (hasRankData) {
+        csv += '"","","","","","","","","","",""\n';
+      } else {
+        csv += '"","","","","","","",""\n';
+      }
     });
+
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
