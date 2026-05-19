@@ -2094,21 +2094,21 @@
       <div class="config-field">
         <label>Mode de validation à la soumission</label>
         <div class="admin-info" style="margin: 8px 0;">
-          Détermine ce qui est requis pour qu'un votant puisse soumettre son sondage.
+          Règle commune aux deux modes : <strong>les catégories partiellement remplies (1 ou 2 choix sur 3) sont toujours interdites</strong>. Chaque catégorie doit être soit complètement remplie, soit complètement vide.
         </div>
         <div class="validation-mode-group">
           <label class="validation-mode-option">
             <input type="radio" name="validation-mode" value="strict" id="validation-strict">
             <div class="validation-mode-content">
               <div class="validation-mode-title">🔒 Strict <span class="validation-mode-default">(recommandé)</span></div>
-              <div class="validation-mode-desc">Toutes les catégories doivent être complètement remplies (tous les choix requis). Impossible de soumettre si une catégorie est incomplète.</div>
+              <div class="validation-mode-desc">Si certaines catégories sont vides à la soumission, le votant doit confirmer qu'il les complétera plus tard. Idéal pour encourager la participation complète tout en permettant de soumettre en plusieurs fois.</div>
             </div>
           </label>
           <label class="validation-mode-option">
             <input type="radio" name="validation-mode" value="permissive" id="validation-permissive">
             <div class="validation-mode-content">
               <div class="validation-mode-title">⚖ Permissif</div>
-              <div class="validation-mode-desc">Au moins 1 choix requis par catégorie, mais on tolère qu'une catégorie ne soit pas complètement remplie (1 ou 2 choix au lieu de 3).</div>
+              <div class="validation-mode-desc">Aucune confirmation demandée si certaines catégories sont vides — le votant peut soumettre les catégories complètes et revenir compléter les autres quand il veut.</div>
             </div>
           </label>
         </div>
